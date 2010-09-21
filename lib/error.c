@@ -16,7 +16,7 @@
 static PillBigError last_error = PillBigError_Success;
 
 PillBigError
-pillbig_error_get_last()
+pillbig_error_get()
 {
 	return last_error;
 }

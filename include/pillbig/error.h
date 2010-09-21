@@ -18,9 +18,12 @@ typedef enum
 	PillBigError_Success,                 /**< The last operation was done successfully. */
 	PillBigError_UnknownError,            /**< An unknown error occured. */
 	PillBigError_SystemError,             /**< A system error occured. */
-	PillBigError_NotImplemented,
+	PillBigError_NotImplemented,          /**< Current function isn't implemented yet. */
 
 	PillBigError_InvalidPillBigObject,    /**< Invalid PillBig object. */
+	PillBigError_InvalidStream,           /**< Invalid stream. */
+
+	PillBigError_FileIndexOutOfRange,     /**< File index out of range. */
 
 	PillBigError_ExternalFileShorter,     /**< The replacement file was shorter than expected. */
 	PillBigError_ExternalFileLarger,      /**< The replacement file was larger than expected. */

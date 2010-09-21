@@ -26,6 +26,7 @@ AC_PROG_LIBTOOL
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
+AC_FUNC_MALLOC
 
 AC_CONFIG_FILES([Makefile
                  lib/Makefile

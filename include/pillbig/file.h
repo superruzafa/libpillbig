@@ -28,11 +28,14 @@ typedef enum
 }
 PillBigPlatform;
 
+/**
+ *  Replacement modes.
+ */
 typedef enum
 {
-	PillBigReplaceMode_Strict,               /**< The replace file size must be the same than the pill.big one. */
-	PillBigReplaceMode_AllowShorterFiles,    /**< The replace file size must be shorter or equal than the pill.big one. */
-	PillBigReplaceMode_AllowLargerFiles,     /**< The replace file size could be different than the pill.big one. */
+	PillBigReplaceMode_Strict,               /**< The replace file size must be the same than the one from pill.big. */
+	PillBigReplaceMode_AllowShorterFiles,    /**< The replace file size must be shorter or equal than the one from pill.big. */
+	PillBigReplaceMode_AllowLargerFiles,     /**< The replace file size could be different than the one from pill.big. */
 }
 PillBigReplaceMode;
 
@@ -118,7 +121,7 @@ pillbig_set_replace_mode(PillBig pillbig, PillBigReplaceMode mode);
  *  	Count of stored files in pill.big file if successful.
  *  	-1 otherwise.
  */
-int
+unsigned int
 pillbig_get_files_count(PillBig pillbig);
 
 /**
@@ -142,7 +145,7 @@ pillbig_get_hash_by_filename(char *filename);
  *  @return
  *  	pill.big file index.
  */
-int
+unsigned int
 pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash);
 
 /**
@@ -157,7 +160,7 @@ pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash);
  *  	NULL otherwise.
  */
 PillBigFileEntry *
-pillbig_get_entry(PillBig pillbig, int index);
+pillbig_get_entry(PillBig pillbig, unsigned int index);
 
 /**
  *  Dumps the contents of a pill.big file.
@@ -172,7 +175,7 @@ pillbig_get_entry(PillBig pillbig, int index);
  *  	Operation result.
  */
 PillBigError
-pillbig_file_extract(PillBig pillbig, int index, FILE *output);
+pillbig_file_extract(PillBig pillbig, unsigned int index, FILE *output);
 
 /**
  *  Replaces the contents of a pill.big file with external raw data.
@@ -201,14 +204,17 @@ pillbig_file_extract(PillBig pillbig, int index, FILE *output);
  *  @return
  *  	Operation result.
  *  	- PillBigError_Success
- *  		if pill.big file could be replaced and both file sizes are
+ *  		If pill.big file could be replaced and both file sizes are
  *  		the same.
  *  	- PillBigError_ExternalFileShorter
- *  		if file could be replaced but external file was shorter than
- *  		pill.big file.
+ *  		When PillBig replacement mode allows shorter files and the
+ *  		external file is shorter than the pill.big one.
+ *  	- PillBigError_ExternalFileLarger
+ *  		When PillBig replacement mode allows larger files and the
+ *  		external file is larger than the pill.big one.
  */
 PillBigError
-pillbig_file_replace(PillBig pillbig, int index, FILE *input);
+pillbig_file_replace(PillBig pillbig, unsigned int index, FILE *input);
 
 /**
  *  Closes a PillBig object.
