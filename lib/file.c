@@ -47,12 +47,12 @@ PillBig
 pillbig_open(FILE *input)
 {
 	pillbig_error_clear();
-	SET_ERROR_IF_FAIL(input != NULL, PillBigError_InvalidStream);
-	RETURN_VALUE_IF_FAIL(input != NULL, NULL);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(input != NULL,
+		PillBigError_InvalidStream, NULL);
 
 	PillBig pillbig = (PillBig)malloc(sizeof(struct PillBig));
-	SET_ERROR_IF_FAIL(pillbig != NULL, PillBigError_SystemError);
-	RETURN_VALUE_IF_FAIL(pillbig != NULL, NULL);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
+		PillBigError_SystemError, NULL);
 
 	memset(pillbig, 0, sizeof(struct PillBig));
 
@@ -85,22 +85,32 @@ pillbig_get_platform(PillBig pillbig)
 PillBigReplaceMode
 pillbig_get_replace_mode(PillBig pillbig)
 {
-	pillbig_error_set(PillBigError_NotImplemented);
-	return PillBigReplaceMode_Strict;
+	pillbig_error_clear();
+	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject,
+		PillBigReplaceMode_Strict);
+
+	return pillbig->replace_mode;
 }
 
 void
 pillbig_set_replace_mode(PillBig pillbig, PillBigReplaceMode mode)
 {
-	pillbig_error_set(PillBigError_NotImplemented);
+	pillbig_error_clear();
+	SET_ERROR_RETURN_IF_FAIL(pillbig != NULL, PillBigError_InvalidPillBigObject);
+	SET_ERROR_RETURN_IF_FAIL(PillBigReplaceMode_Strict <= mode &&
+		mode <= PillBigReplaceMode_AllowLargerFiles,
+		PillBigError_InvalidReplaceMode);
+
+	pillbig->replace_mode = mode;
 }
 
 unsigned int
 pillbig_get_files_count(PillBig pillbig)
 {
 	pillbig_error_clear();
-	SET_ERROR_IF_FAIL(pillbig != NULL, PillBigError_InvalidPillBigObject);
-	RETURN_VALUE_IF_FAIL(pillbig != NULL, -1);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject, -1);
 
 	return pillbig->files_count;
 }
@@ -125,11 +135,10 @@ PillBigFileEntry *
 pillbig_get_entry(PillBig pillbig, unsigned int index)
 {
 	pillbig_error_clear();
-	SET_ERROR_IF_FAIL(pillbig != NULL, PillBigError_InvalidPillBigObject);
-	RETURN_VALUE_IF_FAIL(pillbig != NULL, NULL);
-
-	SET_ERROR_IF_FAIL(0 <= index && index < pillbig->files_count, PillBigError_FileIndexOutOfRange);
-	RETURN_VALUE_IF_FAIL(0 <= index && index < pillbig->files_count, NULL);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject, NULL);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(0 <= index && index < pillbig->files_count,
+		PillBigError_FileIndexOutOfRange, NULL);
 
 	return (PillBigFileEntry *)&pillbig->entries[index];
 }
@@ -152,8 +161,7 @@ void
 pillbig_close(PillBig pillbig)
 {
 	pillbig_error_clear();
-	SET_ERROR_IF_FAIL(pillbig != NULL, PillBigError_InvalidPillBigObject);
-	RETURN_IF_FAIL(pillbig != NULL);
+	SET_ERROR_RETURN_IF_FAIL(pillbig != NULL, PillBigError_InvalidPillBigObject);
 
 	if (pillbig->entries != NULL)
 	{
@@ -169,31 +177,31 @@ static PillBigError
 pillbig_read_file_entries(PillBig pillbig)
 {
 	pillbig_error_clear();
-	RETURN_ERROR_IF_FAIL(pillbig != NULL, PillBigError_InvalidPillBigObject);
+	SET_RETURN_ERROR_IF_FAIL(pillbig != NULL, PillBigError_InvalidPillBigObject);
 
 	int result;
 	int i;
 
 	result = fseek(pillbig->pillbig, 0, SEEK_SET);
-	RETURN_ERROR_IF_FAIL(result == 0, PillBigError_SystemError);
+	SET_RETURN_ERROR_IF_FAIL(result == 0, PillBigError_SystemError);
 
 	result = fread(&pillbig->files_count, 4, 1, pillbig->pillbig);
-	RETURN_ERROR_IF_FAIL(result == 1, PillBigError_SystemError);
+	SET_RETURN_ERROR_IF_FAIL(result == 1, PillBigError_SystemError);
 
 	pillbig->entries = (PillBigFileEntry *)calloc(sizeof(PillBigFileEntry), pillbig->files_count);
-	RETURN_ERROR_IF_FAIL(pillbig->entries != NULL, PillBigError_SystemError);
+	SET_RETURN_ERROR_IF_FAIL(pillbig->entries != NULL, PillBigError_SystemError);
 
 	i = 0;
 	while (i < pillbig->files_count)
 	{
 		result = fread(&pillbig->entries[i].hash, 4, 1, pillbig->pillbig);
-		RETURN_ERROR_IF_FAIL(result == 1, PillBigError_SystemError);
+		SET_RETURN_ERROR_IF_FAIL(result == 1, PillBigError_SystemError);
 
 		result = fread(&pillbig->entries[i].size, 4, 1, pillbig->pillbig);
-		RETURN_ERROR_IF_FAIL(result == 1, PillBigError_SystemError);
+		SET_RETURN_ERROR_IF_FAIL(result == 1, PillBigError_SystemError);
 
 		result = fread(&pillbig->entries[i].offset, 4, 1, pillbig->pillbig);
-		RETURN_ERROR_IF_FAIL(result == 1, PillBigError_SystemError);
+		SET_RETURN_ERROR_IF_FAIL(result == 1, PillBigError_SystemError);
 		i++;
 	}
 

@@ -22,6 +22,7 @@ typedef enum
 
 	PillBigError_InvalidPillBigObject,    /**< Invalid PillBig object. */
 	PillBigError_InvalidStream,           /**< Invalid stream. */
+	PillBigError_InvalidReplaceMode,      /**< Invalid replacement mode. */
 
 	PillBigError_FileIndexOutOfRange,     /**< File index out of range. */
 
