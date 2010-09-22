@@ -14,6 +14,7 @@
 
 #include <malloc.h>
 #include <string.h>
+#include <ctype.h>
 #include <pillbig/pillbig.h>
 #include "error_internal.h"
 
@@ -118,9 +119,55 @@ pillbig_get_files_count(PillBig pillbig)
 PillBigFileHash
 pillbig_get_hash_by_filename(char *filename)
 {
-	pillbig_error_set(PillBigError_NotImplemented);
+	#define HASH_BUFFER_SIZE 64
+	/*
+	 * Hash function courtesy of Ben Lincoln from The Lost Worlds.
+	 */
 
-	return -1;
+	pillbig_error_clear();
+	SET_ERROR_RETURN_VALUE_IF_FAIL(filename != NULL, PillBigError_InvalidFilename, -1);
+
+	PillBigFileHash hashname;
+	int filename_length, buffer_length;
+	char buffer[HASH_BUFFER_SIZE];
+	int i;
+	unsigned int current_group;
+
+	filename_length = strlen(filename);
+
+	/*
+	 * Blood Omen's hash algorithm operates in groups of four characters
+	 * so if the filename is not four characters long, it needs to be padded out
+	 */
+	buffer_length = filename_length + 4 - filename_length % 4;
+	SET_ERROR_RETURN_VALUE_IF_FAIL(buffer_length <= HASH_BUFFER_SIZE, PillBigError_UnknownError, -1);
+
+	memset(buffer, 0, HASH_BUFFER_SIZE);
+	strcpy(buffer, filename);
+
+	for (i = 0; i < buffer_length; i++)
+	{
+		switch (buffer[i])
+		{
+			case '/':
+			case '\\':
+				buffer[i] = ':';
+				break;
+			default:
+				buffer[i] = toupper(buffer[i]);
+				break;
+		}
+	}
+
+	hashname = 0;
+	for (i = 0; i < buffer_length; i += 4)
+	{
+		current_group = 0;
+		current_group = (buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i];
+		hashname = hashname ^ current_group;
+	}
+
+	return hashname;
 }
 
 unsigned int

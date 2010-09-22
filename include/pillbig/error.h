@@ -15,19 +15,19 @@
 
 typedef enum
 {
-	PillBigError_Success,                 /**< The last operation was done successfully. */
-	PillBigError_UnknownError,            /**< An unknown error occured. */
-	PillBigError_SystemError,             /**< A system error occured. */
-	PillBigError_NotImplemented,          /**< Current function isn't implemented yet. */
+	PillBigError_Success,                       /**< The last operation was done successfully. */
+	PillBigError_UnknownError,                  /**< An unknown error occured. */
+	PillBigError_SystemError,                   /**< A system error occured. */
+	PillBigError_NotImplemented,                /**< Current function isn't implemented yet. */
 
-	PillBigError_InvalidPillBigObject,    /**< Invalid PillBig object. */
-	PillBigError_InvalidStream,           /**< Invalid stream. */
-	PillBigError_InvalidReplaceMode,      /**< Invalid replacement mode. */
+	PillBigError_InvalidPillBigObject = 32,     /**< Invalid PillBig object. */
+	PillBigError_InvalidStream,                 /**< Invalid stream. */
+	PillBigError_InvalidReplaceMode,            /**< Invalid replacement mode. */
+	PillBigError_InvalidFilename,               /**< Provided filename was invalid. */
 
-	PillBigError_FileIndexOutOfRange,     /**< File index out of range. */
-
-	PillBigError_ExternalFileShorter,     /**< The replacement file was shorter than expected. */
-	PillBigError_ExternalFileLarger,      /**< The replacement file was larger than expected. */
+	PillBigError_FileIndexOutOfRange = 64,      /**< File index out of range. */
+	PillBigError_ExternalFileShorter,           /**< The replacement file was shorter than expected. */
+	PillBigError_ExternalFileLarger,            /**< The replacement file was larger than expected. */
 }
 PillBigError;
 

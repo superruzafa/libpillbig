@@ -69,6 +69,34 @@ END_TEST
 
 
 
+START_TEST(get_hash)
+{
+	char *filenames[] =
+	{
+		"GAME\\ALL.VAG", "GAME\\ANTITOXN.SDR", "GAME\\ATRACTNS.TIM",
+		"GAME\\AV0001.FAG", "GAME\\BATS.VAG", "GAME\\BONE2DIS.SHD",
+		"GAME\\CHAR0000.SHA", "GAME\\CHAR0178.SHA", "GAME\\CONCEPT.HTM",
+		"GAME\\GRP00000.CTM", "GAME\\M0000000.CMP", "GAME\\MAPGLOW.SDT"
+	};
+
+	PillBigFileHash hashes[] =
+	{
+		1312839251, 220166696, 270101794, 1533899019, 1348087145,
+		169156399, 2087066718, 2070355030, 302386960, 1902909488,
+		135139885, 369562388, -1
+	};
+
+	int i = 0;
+	while (hashes[i] != -1)
+	{
+		fail_unless(pillbig_get_hash_by_filename(filenames[i]) == hashes[i]);
+		i++;
+	}
+}
+END_TEST
+
+
+
 START_TEST(get_platform)
 {
 	PillBigPlatform platform = pillbig_get_platform(pillbig);
@@ -120,6 +148,11 @@ pillbig_file_test_get_suite(void)
 	tcase_add_checked_fixture(test_case, setup, teardown);
 	tcase_add_test(test_case, set_replace_mode);
 	tcase_add_test(test_case, set_invalid_replace_mode);
+
+	suite_add_tcase(suite, test_case);
+
+	test_case = tcase_create("Conversion");
+	tcase_add_test(test_case, get_hash);
 
 	suite_add_tcase(suite, test_case);
 
