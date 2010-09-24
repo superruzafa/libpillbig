@@ -1,13 +1,15 @@
-/**
+/*
  *  libpillbig
  *  A library to deal with Blood Omen: Legacy of Kain pill.big files.
- *
- *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
- *  @version SVN $Id$
- *
+ */
+
+/**
  *  @file
  *  @brief
  *  	Basic pill.big metafile manipulation. Implementation file.
+ *
+ *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
+ *  @version SVN $Id$
  */
 
 
@@ -19,14 +21,21 @@
 #include "error_internal.h"
 
 
+/**
+ *  Returns the minimum of two values.
+ */
+#define MIN(x, y) ((x) < (y)) ? (x) : (y)
+
+
 
 struct PillBig
 {
-	FILE                *pillbig;         /**< pill.big file descriptor .*/
-	PillBigPlatform      platform;        /**< Blood Omen's pill.big platform. */
-	unsigned int         files_count;     /**< pill.big files count. */
-	PillBigFileEntry    *entries;         /**< File entries table. */
-	PillBigReplaceMode   replace_mode;    /**< Replacement mode. */
+	FILE                *pillbig;          /**< pill.big file descriptor .*/
+	PillBigPlatform      platform;         /**< Blood Omen's pill.big platform. */
+	unsigned int         files_count;      /**< pill.big files count. */
+	PillBigFileEntry    *entries;          /**< File entries table. */
+	PillBigReplaceMode   replace_mode;     /**< Replacement mode. */
+	int                  close_on_free;    /**< 1 if pill.big FILE must be closed when freeing the object. */
 };
 
 
@@ -42,6 +51,17 @@ struct PillBig
 static PillBigError
 pillbig_read_file_entries(PillBig pillbig);
 
+/**
+ *  Guesses the platform of a pill.big file.
+ *
+ *  @param pillbig
+ *  	PillBig object with opened pill.big file.
+ *  @return
+ *  	PillBigPlatform.
+ */
+static PillBigPlatform
+pillbig_guess_platform(PillBig pillbig);
+
 
 
 PillBig
@@ -55,15 +75,46 @@ pillbig_open(FILE *input)
 	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
 		PillBigError_SystemError, NULL);
 
+	/*
+	 * Initialize the object.
+	 */
 	memset(pillbig, 0, sizeof(struct PillBig));
-
 	pillbig->pillbig      = input;
 	pillbig->platform     = PillBigPlatform_Unknown;
 	pillbig->replace_mode = PillBigReplaceMode_Strict;
 
-	PillBigError error = pillbig_read_file_entries(pillbig);
-	if (error != PillBigError_Success)
+	/*
+	 * Try to guess the pill.big platform.
+	 */
+	pillbig->platform = pillbig_guess_platform(pillbig);
+	if (pillbig_no_error())
 	{
+		switch (pillbig->platform)
+		{
+			case PillBigPlatform_PC:
+				break;
+			default:
+				/*
+				 * Unsupported version of pill.big.
+				 */
+				pillbig_error_set(PillBigError_UnsupportedFormat);
+				break;
+		}
+	}
+
+	if (pillbig_no_error())
+	{
+		/*
+		 * Try to read the pill.big's entries.
+		 */
+		PillBigError error = pillbig_read_file_entries(pillbig);
+	}
+
+	if (pillbig_any_error())
+	{
+		/*
+		 * Cannot open pill.big. Free resources.
+		 */
 		if (pillbig->entries != NULL)
 		{
 			free(pillbig->entries);
@@ -75,12 +126,47 @@ pillbig_open(FILE *input)
 	return pillbig;
 }
 
+PillBig
+pillbig_open_from_filename(char *filename)
+{
+	pillbig_error_clear();
+	SET_ERROR_RETURN_VALUE_IF_FAIL(filename != NULL,
+		PillBigError_InvalidFilename, NULL);
+
+	PillBig pillbig = NULL;
+	FILE *file = fopen(filename, "r+b");
+	if (file == NULL)
+	{
+		/*
+		 * Cannot open the file in read-write mode.
+		 * Try to open in read-only mode.
+		 */
+		file = fopen(filename, "rb");
+	}
+	SET_ERROR_RETURN_VALUE_IF_FAIL(file != NULL, PillBigError_SystemError, NULL);
+
+	pillbig = pillbig_open(file);
+
+	/*
+	 * We open the file here. Must be closed when pillbig_close() is called.
+	 */
+	if (pillbig != NULL)
+	{
+		pillbig->close_on_free = 1;
+	}
+
+	return pillbig;
+}
+
 PillBigPlatform
 pillbig_get_platform(PillBig pillbig)
 {
-	pillbig_error_set(PillBigError_NotImplemented);
+	pillbig_error_clear();
+	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject,
+		PillBigPlatform_Unknown);
 
-	return PillBigPlatform_Unknown;
+	return pillbig->platform;
 }
 
 PillBigReplaceMode
@@ -131,21 +217,24 @@ pillbig_get_hash_by_filename(char *filename)
 	int filename_length, buffer_length;
 	char buffer[HASH_BUFFER_SIZE];
 	int i;
-	unsigned int current_group;
-
-	filename_length = strlen(filename);
 
 	/*
 	 * Blood Omen's hash algorithm operates in groups of four characters
 	 * so if the filename is not four characters long, it needs to be padded out
 	 */
+	filename_length = strlen(filename);
 	buffer_length = filename_length + 4 - filename_length % 4;
 	SET_ERROR_RETURN_VALUE_IF_FAIL(buffer_length <= HASH_BUFFER_SIZE, PillBigError_UnknownError, -1);
 
 	memset(buffer, 0, HASH_BUFFER_SIZE);
 	strcpy(buffer, filename);
 
-	for (i = 0; i < buffer_length; i++)
+	/*
+	 * Replace directory slashes and backslashes by colons
+	 * and convert chars to uppercase.
+	 */
+	i = 0;
+	while (buffer[i] != '\0' && i < buffer_length)
 	{
 		switch (buffer[i])
 		{
@@ -157,14 +246,17 @@ pillbig_get_hash_by_filename(char *filename)
 				buffer[i] = toupper(buffer[i]);
 				break;
 		}
+		i++;
 	}
 
+	/*
+	 * Calculate the hashname.
+	 */
 	hashname = 0;
 	for (i = 0; i < buffer_length; i += 4)
 	{
-		current_group = 0;
-		current_group = (buffer[i + 3] << 24) | (buffer[i + 2] << 16) | (buffer[i + 1] << 8) | buffer[i];
-		hashname = hashname ^ current_group;
+		hashname ^= (buffer[i + 3] << 24) | (buffer[i + 2] << 16) |
+		            (buffer[i + 1] << 8)  |  buffer[i];
 	}
 
 	return hashname;
@@ -178,7 +270,7 @@ pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash)
 	return -1;
 }
 
-PillBigFileEntry *
+const PillBigFileEntry *
 pillbig_get_entry(PillBig pillbig, unsigned int index)
 {
 	pillbig_error_clear();
@@ -193,7 +285,58 @@ pillbig_get_entry(PillBig pillbig, unsigned int index)
 PillBigError
 pillbig_file_extract(PillBig pillbig, unsigned int index, FILE *output)
 {
-	pillbig_error_set(PillBigError_NotImplemented);
+	#define EXTRACT_BUFFER_SIZE 1024
+
+	pillbig_error_clear();
+	SET_RETURN_ERROR_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject);
+	SET_RETURN_ERROR_IF_FAIL(0 <= index && index < pillbig->files_count,
+		PillBigError_FileIndexOutOfRange);
+	SET_RETURN_ERROR_IF_FAIL(output != NULL, PillBigError_InvalidStream);
+
+	PillBigFileEntry *entry = &pillbig->entries[index];
+	SET_RETURN_ERROR_IF_FAIL(entry != NULL, PillBigError_UnknownError);
+
+	char buffer[EXTRACT_BUFFER_SIZE], *ptr;
+	int remaining_bytes = entry->size, result;
+	int bytes_read, bytes_written;
+
+	result = fseek(pillbig->pillbig, entry->offset, SEEK_SET);
+	SET_RETURN_ERROR_IF_FAIL(result == 0, PillBigError_SystemError);
+
+	while (remaining_bytes > 0)
+	{
+		bytes_read = fread(buffer, sizeof(char), MIN(EXTRACT_BUFFER_SIZE, remaining_bytes), pillbig->pillbig);
+		remaining_bytes -= bytes_read;
+		SET_RETURN_ERROR_IF_FAIL(bytes_read > 0, PillBigError_SystemError);
+		ptr = buffer;
+		while (bytes_read > 0)
+		{
+			bytes_written = fwrite(ptr, sizeof(char), bytes_read, output);
+			bytes_read -= bytes_written;
+			SET_RETURN_ERROR_IF_FAIL(bytes_written > 0, PillBigError_SystemError);
+			ptr += bytes_written;
+		}
+	}
+
+	return pillbig_error_get();
+}
+
+PillBigError
+pillbig_file_extract_to_filename(PillBig pillbig, unsigned int index, char *filename)
+{
+	pillbig_error_clear();
+	SET_RETURN_ERROR_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject);
+	SET_RETURN_ERROR_IF_FAIL(0 <= index && index < pillbig->files_count,
+		PillBigError_FileIndexOutOfRange);
+	SET_RETURN_ERROR_IF_FAIL(filename != NULL, PillBigError_InvalidFilename);
+
+	FILE *file = fopen(filename, "wb");
+	SET_RETURN_ERROR_IF_FAIL(file != NULL, PillBigError_SystemError);
+	pillbig_file_extract(pillbig, index, file);
+	fclose(file);
+
 	return pillbig_error_get();
 }
 
@@ -209,6 +352,11 @@ pillbig_close(PillBig pillbig)
 {
 	pillbig_error_clear();
 	SET_ERROR_RETURN_IF_FAIL(pillbig != NULL, PillBigError_InvalidPillBigObject);
+
+	if (pillbig->close_on_free)
+	{
+		fclose(pillbig->pillbig);
+	}
 
 	if (pillbig->entries != NULL)
 	{
@@ -253,4 +401,36 @@ pillbig_read_file_entries(PillBig pillbig)
 	}
 
 	return PillBigError_Success;
+}
+
+static PillBigPlatform
+pillbig_guess_platform(PillBig pillbig)
+{
+	pillbig_error_clear();
+	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject, PillBigPlatform_Unknown);
+
+	PillBigPlatform platform = PillBigPlatform_Unknown;
+	int result;
+	int magic;
+
+	result = fseek(pillbig->pillbig, 0, SEEK_SET);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(result == 0,
+		PillBigError_SystemError, PillBigPlatform_Unknown);
+
+	result = fread(&magic, 4, 1, pillbig->pillbig);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(result == 1,
+		PillBigError_SystemError, PillBigPlatform_Unknown);
+
+	switch (magic)
+	{
+		case FILES_COUNT_PC:
+			platform = PillBigPlatform_PC;
+			break;
+		default:
+			platform = PillBigPlatform_Unknown;
+			break;
+	}
+
+	return platform;
 }

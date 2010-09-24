@@ -1,13 +1,15 @@
-/**
+/*
  *  libpillbig
  *  A library to deal with Blood Omen: Legacy of Kain pill.big files.
- *
- *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
- *  @version SVN $Id$
- *
+ */
+
+/**
  *  @file
  *  @brief
  *  	Basic pill.big metafile manipulation.
+ *
+ *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
+ *  @version $Id$
  */
 
 #ifndef __PILLBIG_FILE_H__
@@ -16,6 +18,20 @@
 #include <stdio.h>
 #include <pillbig/common.h>
 #include <pillbig/error.h>
+
+
+
+/**
+ *  Number of files in the pill.big file, PC version.
+ */
+#define FILES_COUNT_PC 2572
+
+/**
+ *  Number of files in the pill.big file, PSX version.
+ */
+#define FILES_COUNT_PSX 2552
+
+
 
 /**
  *  Game platform.
@@ -75,6 +91,18 @@ BEGIN_C_DECLS
  */
 PillBig
 pillbig_open(FILE *input);
+
+/**
+ *  Opens a pill.big file given its filename.
+ *
+ *  @param
+ *  	filename pill.big file name.
+ *  @return
+ *  	PillBig object if successful.
+ *  	NULL otherwise.
+ */
+PillBig
+pillbig_open_from_filename(char *filename);
 
 /**
  *  Gets the platform for the Blood Omen's pill.big metafile.
@@ -159,23 +187,38 @@ pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash);
  *  	PillBigFileEntry object if successful.
  *  	NULL otherwise.
  */
-PillBigFileEntry *
+const PillBigFileEntry *
 pillbig_get_entry(PillBig pillbig, unsigned int index);
 
 /**
- *  Dumps the contents of a pill.big file.
+ *  Dumps the contents of a pill.big file into a stream.
  *
  *  @param pillbig
  *  	PillBig object.
  *  @param index
  *  	pill.big file index to be dumped.
  *  @param output
- *  	External file where the pill.big file will be dumped.
+ *  	Stream where the pill.big file will be dumped.
  *  @return
  *  	Operation result.
  */
 PillBigError
 pillbig_file_extract(PillBig pillbig, unsigned int index, FILE *output);
+
+/**
+ * Dumps the contents of a pill.big file into a file.
+ *
+ *  @param pillbig
+ *  	PillBig object.
+ *  @param index
+ *  	pill.big file index to be dumped.
+ *  @param filename
+ *  	External file where the pill.big file will be dumped.
+ *  @return
+ *  	Operation result.
+ */
+PillBigError
+pillbig_file_extract_to_filename(PillBig pillbig, unsigned int index, char *filename);
 
 /**
  *  Replaces the contents of a pill.big file with external raw data.
@@ -192,8 +235,6 @@ pillbig_file_extract(PillBig pillbig, unsigned int index, FILE *output);
  *  Replacing files by larger ones will modify the file entry's offset
  *  and size. Additionally the only way to replace files by larger ones
  *  is appending them to pill.big so pill.big size will grown.
- *
- *  @see pillbig_file_append()
  *
  *  @param pillbig
  *  	PillBig object.
@@ -221,6 +262,9 @@ pillbig_file_replace(PillBig pillbig, unsigned int index, FILE *input);
  *
  *  @param pillbig
  *  	PillBig object.
+ *  @remarks
+ *  	If pill.big was opened with pillbig_open(), pillbig_close()
+ *  won't close the related FILE, you should close manually.
  */
 void
 pillbig_close(PillBig pillbig);

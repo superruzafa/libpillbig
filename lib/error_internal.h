@@ -1,13 +1,15 @@
-/**
+/*
  *  libpillbig
  *  A library to deal with Blood Omen: Legacy of Kain pill.big files.
- *
- *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
- *  @version SVN $Id$
- *
+ */
+
+/**
  *  @file
  *  @brief
  *  	Internal error macros and definitions.
+ *
+ *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
+ *  @version SVN $Id$
  */
 
 #ifndef __PILLBIG_INTERNAL_ERROR_H__
@@ -33,7 +35,9 @@
 #define SET_RETURN_ERROR_IF_FAIL(assert, error) \
 	{if (!(assert)) {pillbig_error_set(error); return pillbig_error_get();}}
 
-#define pillbig_error_clear() pillbig_error_set(PillBigError_Success);
+#define pillbig_error_clear()    (pillbig_error_set(PillBigError_Success))
+#define pillbig_any_error()      (pillbig_error_get() != PillBigError_Success)
+#define pillbig_no_error()       (pillbig_error_get() == PillBigError_Success)
 
 /**
  *  Sets the last occured error.

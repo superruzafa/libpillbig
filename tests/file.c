@@ -1,13 +1,15 @@
-/**
+/*
  *  libpillbig
  *  A library to deal with Blood Omen: Legacy of Kain pill.big files.
- *
- *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
- *  @version SVN $Id$
- *
+ */
+
+/**
  *  @file
  *  @brief
  *  	Unit tests for file module.
+ *
+ *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
+ *  @version SVN $Id$
  */
 
 #include <check.h>
@@ -29,7 +31,7 @@ static FILE *pillbig_file;
 void
 setup()
 {
-	pillbig_file = fopen(TEST_PILLBIG_FILENAME, "rb");
+	pillbig_file = fopen(TEST_PILLBIG_FILENAME, "r+b");
 	fail_unless(pillbig_file != NULL);
 
 	pillbig = pillbig_open(pillbig_file);
@@ -115,7 +117,7 @@ END_TEST
 
 START_TEST(get_first_entry)
 {
-	PillBigFileEntry *entry = pillbig_get_entry(pillbig, 0);
+	const PillBigFileEntry *entry = pillbig_get_entry(pillbig, 0);
 	fail_unless(entry != NULL);
 	fail_unless(pillbig_error_get() == PillBigError_Success);
 }
@@ -123,7 +125,7 @@ END_TEST
 
 START_TEST(get_last_entry)
 {
-	PillBigFileEntry *entry = pillbig_get_entry(pillbig, pillbig_get_files_count(pillbig) - 1);
+	const PillBigFileEntry *entry = pillbig_get_entry(pillbig, pillbig_get_files_count(pillbig) - 1);
 	fail_unless(entry != NULL);
 	fail_unless(pillbig_error_get() == PillBigError_Success);
 }
@@ -131,9 +133,59 @@ END_TEST
 
 START_TEST(get_unexistent_entry)
 {
-	PillBigFileEntry *entry = pillbig_get_entry(pillbig, pillbig_get_files_count(pillbig) + 1000);
+	const PillBigFileEntry *entry = pillbig_get_entry(pillbig, pillbig_get_files_count(pillbig) + 1000);
 	fail_unless(entry == NULL);
 	fail_unless(pillbig_error_get() == PillBigError_FileIndexOutOfRange);
+}
+END_TEST
+
+
+
+START_TEST(open_from_filename)
+{
+	PillBig pillbig = pillbig_open_from_filename(TEST_PILLBIG_FILENAME);
+	fail_unless(pillbig != NULL);
+	pillbig_close(pillbig);
+}
+END_TEST
+
+START_TEST(open_from_filename_fail)
+{
+	PillBig pillbig = pillbig_open_from_filename(__FILE__);
+	fail_unless(pillbig == NULL);
+	fail_unless(pillbig_error_get() == PillBigError_UnsupportedFormat);
+}
+END_TEST
+
+START_TEST(file_extract)
+{
+	FILE *file = fopen("test", "wb");
+	pillbig_file_extract(pillbig, 0, file);
+	fail_unless(pillbig_error_get() == PillBigError_Success);
+
+	const PillBigFileEntry *entry = pillbig_get_entry(pillbig, 0);
+	int result = fseek(file, 0, SEEK_END);
+	fail_unless(result == 0);
+	result = ftell(file);
+	fclose(file);
+	fail_unless(result == entry->size);
+	unlink("test");
+}
+END_TEST
+
+START_TEST(file_extract_to_filename)
+{
+	pillbig_file_extract_to_filename(pillbig, 0, "test");
+	fail_unless(pillbig_error_get() == PillBigError_Success);
+
+	const PillBigFileEntry *entry = pillbig_get_entry(pillbig, 0);
+	FILE *file = fopen("test", "rb");
+	int result = fseek(file, 0, SEEK_END);
+	fail_unless(result == 0);
+	result = ftell(file);
+	fclose(file);
+	fail_unless(result == entry->size);
+	unlink("test");
 }
 END_TEST
 
@@ -148,23 +200,27 @@ pillbig_file_test_get_suite(void)
 	tcase_add_checked_fixture(test_case, setup, teardown);
 	tcase_add_test(test_case, set_replace_mode);
 	tcase_add_test(test_case, set_invalid_replace_mode);
-
 	suite_add_tcase(suite, test_case);
 
 	test_case = tcase_create("Conversion");
 	tcase_add_test(test_case, get_hash);
-
 	suite_add_tcase(suite, test_case);
 
 	test_case = tcase_create("Queries");
 	tcase_add_checked_fixture(test_case, setup, teardown);
-
 	tcase_add_test(test_case, get_platform);
 	tcase_add_test(test_case, get_files_count);
 	tcase_add_test(test_case, get_first_entry);
 	tcase_add_test(test_case, get_last_entry);
 	tcase_add_test(test_case, get_unexistent_entry);
+	suite_add_tcase(suite, test_case);
 
+	test_case = tcase_create("IO");
+	tcase_add_checked_fixture(test_case, setup, teardown);
+	tcase_add_test(test_case, open_from_filename);
+	tcase_add_test(test_case, open_from_filename_fail);
+	tcase_add_test(test_case, file_extract);
+	tcase_add_test(test_case, file_extract_to_filename);
 	suite_add_tcase(suite, test_case);
 
 	return suite;

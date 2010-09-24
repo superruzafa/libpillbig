@@ -1,13 +1,15 @@
-/**
+/*
  *  libpillbig
  *  A library to deal with Blood Omen: Legacy of Kain pill.big files.
- *
- *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
- *  @version SVN $Id$
- *
+ */
+
+/**
  *  @file
  *  @brief
  *  	Unit tests suite file.
+ *
+ *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
+ *  @version SVN $Id$
  */
 
 #include <check.h>
