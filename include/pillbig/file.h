@@ -29,7 +29,7 @@
 /**
  *  Number of files in the pill.big file, PSX version.
  */
-#define FILES_COUNT_PSX 2552
+#define FILES_COUNT_PSX 2321
 
 
 

@@ -61,11 +61,11 @@ START_TEST(set_replace_mode)
 }
 END_TEST
 
-START_TEST(set_invalid_replace_mode)
+START_TEST(set_replace_mode_fail)
 {
 	pillbig_set_replace_mode(pillbig, 1000);
 	fail_unless(pillbig_error_get() == PillBigError_InvalidReplaceMode);
-	fail_if(pillbig_get_replace_mode(pillbig) == 1000);
+	fail_unless(pillbig_get_replace_mode(pillbig) == PillBigReplaceMode_Strict);
 }
 END_TEST
 
@@ -110,7 +110,18 @@ END_TEST
 
 START_TEST(get_files_count)
 {
-	fail_unless(pillbig_get_files_count(pillbig) == 2572);
+	switch (pillbig_get_platform(pillbig))
+	{
+		case PillBigPlatform_PC:
+			fail_unless(pillbig_get_files_count(pillbig) == FILES_COUNT_PC);
+			break;
+		case 1+PillBigPlatform_PSX:
+			fail_unless(pillbig_get_files_count(pillbig) == FILES_COUNT_PSX);
+			break;
+		default:
+			fail("Unsupported format.");
+			break;
+	}
 	fail_unless(pillbig_error_get() == PillBigError_Success);
 }
 END_TEST
@@ -160,6 +171,7 @@ END_TEST
 START_TEST(file_extract)
 {
 	FILE *file = fopen("test", "wb");
+	fail_unless(file != NULL);
 	pillbig_file_extract(pillbig, 0, file);
 	fail_unless(pillbig_error_get() == PillBigError_Success);
 
@@ -180,6 +192,7 @@ START_TEST(file_extract_to_filename)
 
 	const PillBigFileEntry *entry = pillbig_get_entry(pillbig, 0);
 	FILE *file = fopen("test", "rb");
+	fail_unless(file != NULL);
 	int result = fseek(file, 0, SEEK_END);
 	fail_unless(result == 0);
 	result = ftell(file);
@@ -199,7 +212,7 @@ pillbig_file_test_get_suite(void)
 	TCase *test_case = tcase_create("Configuration");
 	tcase_add_checked_fixture(test_case, setup, teardown);
 	tcase_add_test(test_case, set_replace_mode);
-	tcase_add_test(test_case, set_invalid_replace_mode);
+	tcase_add_test(test_case, set_replace_mode_fail);
 	suite_add_tcase(suite, test_case);
 
 	test_case = tcase_create("Conversion");

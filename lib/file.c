@@ -92,6 +92,10 @@ pillbig_open(FILE *input)
 		switch (pillbig->platform)
 		{
 			case PillBigPlatform_PC:
+			case PillBigPlatform_PSX:
+				/*
+				 * Do nothing.
+				 */
 				break;
 			default:
 				/*
@@ -426,6 +430,9 @@ pillbig_guess_platform(PillBig pillbig)
 	{
 		case FILES_COUNT_PC:
 			platform = PillBigPlatform_PC;
+			break;
+		case FILES_COUNT_PSX:
+			platform = PillBigPlatform_PSX;
 			break;
 		default:
 			platform = PillBigPlatform_Unknown;
