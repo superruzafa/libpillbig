@@ -115,7 +115,7 @@ START_TEST(get_files_count)
 		case PillBigPlatform_PC:
 			fail_unless(pillbig_get_files_count(pillbig) == FILES_COUNT_PC);
 			break;
-		case 1+PillBigPlatform_PSX:
+		case PillBigPlatform_PSX:
 			fail_unless(pillbig_get_files_count(pillbig) == FILES_COUNT_PSX);
 			break;
 		default:
@@ -147,6 +147,19 @@ START_TEST(get_unexistent_entry)
 	const PillBigFileEntry *entry = pillbig_get_entry(pillbig, pillbig_get_files_count(pillbig) + 1000);
 	fail_unless(entry == NULL);
 	fail_unless(pillbig_error_get() == PillBigError_FileIndexOutOfRange);
+}
+END_TEST
+
+START_TEST(get_index_by_hash)
+{
+	const PillBigFileEntry *entry;
+
+	int i;
+	for (i = 0; i < pillbig_get_files_count(pillbig); i++)
+	{
+		entry = pillbig_get_entry(pillbig, i);
+		fail_unless(pillbig_get_entry_index_by_hash(pillbig, entry->hash) == i);
+	}
 }
 END_TEST
 
@@ -226,6 +239,7 @@ pillbig_file_test_get_suite(void)
 	tcase_add_test(test_case, get_first_entry);
 	tcase_add_test(test_case, get_last_entry);
 	tcase_add_test(test_case, get_unexistent_entry);
+	tcase_add_test(test_case, get_index_by_hash);
 	suite_add_tcase(suite, test_case);
 
 	test_case = tcase_create("IO");

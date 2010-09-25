@@ -266,10 +266,22 @@ pillbig_get_hash_by_filename(char *filename)
 	return hashname;
 }
 
-unsigned int
+int
 pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash)
 {
-	pillbig_error_set(PillBigError_NotImplemented);
+	pillbig_error_clear();
+	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject, -1);
+
+	int i = 0;
+	while (i < pillbig->files_count)
+	{
+		if (pillbig->entries[i].hash == hash)
+		{
+			return i;
+		}
+		i++;
+	}
 
 	return -1;
 }

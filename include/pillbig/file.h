@@ -173,7 +173,7 @@ pillbig_get_hash_by_filename(char *filename);
  *  @return
  *  	pill.big file index.
  */
-unsigned int
+int
 pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash);
 
 /**
