@@ -287,7 +287,7 @@ pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash)
 }
 
 const PillBigFileEntry *
-pillbig_get_entry(PillBig pillbig, unsigned int index)
+pillbig_get_entry(PillBig pillbig, int index)
 {
 	pillbig_error_clear();
 	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
@@ -299,7 +299,7 @@ pillbig_get_entry(PillBig pillbig, unsigned int index)
 }
 
 PillBigError
-pillbig_file_extract(PillBig pillbig, unsigned int index, FILE *output)
+pillbig_file_extract(PillBig pillbig, int index, FILE *output)
 {
 	#define EXTRACT_BUFFER_SIZE 1024
 
@@ -339,7 +339,7 @@ pillbig_file_extract(PillBig pillbig, unsigned int index, FILE *output)
 }
 
 PillBigError
-pillbig_file_extract_to_filename(PillBig pillbig, unsigned int index, char *filename)
+pillbig_file_extract_to_filename(PillBig pillbig, int index, char *filename)
 {
 	pillbig_error_clear();
 	SET_RETURN_ERROR_IF_FAIL(pillbig != NULL,
@@ -357,7 +357,7 @@ pillbig_file_extract_to_filename(PillBig pillbig, unsigned int index, char *file
 }
 
 PillBigError
-pillbig_file_replace(PillBig pillbig, unsigned int index, FILE *input)
+pillbig_file_replace(PillBig pillbig, int index, FILE *input)
 {
 	pillbig_error_set(PillBigError_NotImplemented);
 	return pillbig_error_get();

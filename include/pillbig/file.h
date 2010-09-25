@@ -188,7 +188,7 @@ pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash);
  *  	NULL otherwise.
  */
 const PillBigFileEntry *
-pillbig_get_entry(PillBig pillbig, unsigned int index);
+pillbig_get_entry(PillBig pillbig, int index);
 
 /**
  *  Dumps the contents of a pill.big file into a stream.
@@ -203,7 +203,7 @@ pillbig_get_entry(PillBig pillbig, unsigned int index);
  *  	Operation result.
  */
 PillBigError
-pillbig_file_extract(PillBig pillbig, unsigned int index, FILE *output);
+pillbig_file_extract(PillBig pillbig, int index, FILE *output);
 
 /**
  * Dumps the contents of a pill.big file into a file.
@@ -218,7 +218,7 @@ pillbig_file_extract(PillBig pillbig, unsigned int index, FILE *output);
  *  	Operation result.
  */
 PillBigError
-pillbig_file_extract_to_filename(PillBig pillbig, unsigned int index, char *filename);
+pillbig_file_extract_to_filename(PillBig pillbig, int index, char *filename);
 
 /**
  *  Replaces the contents of a pill.big file with external raw data.
@@ -255,7 +255,7 @@ pillbig_file_extract_to_filename(PillBig pillbig, unsigned int index, char *file
  *  		external file is larger than the pill.big one.
  */
 PillBigError
-pillbig_file_replace(PillBig pillbig, unsigned int index, FILE *input);
+pillbig_file_replace(PillBig pillbig, int index, FILE *input);
 
 /**
  *  Closes a PillBig object.

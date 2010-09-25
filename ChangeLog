@@ -1,0 +1,9 @@
+Changelog
+---------
+
+0.1
+	Opens and load a PC or PSX version of Blood Omen's pill.big.
+	Read its file entries table (hash, offset and size of the internal files).
+	Computes Blood Omen filenames to Blood Omen hashnames.
+	Lookup a file entry by its hashname.
+	Extract these files.
