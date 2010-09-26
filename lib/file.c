@@ -19,24 +19,12 @@
 #include <ctype.h>
 #include <pillbig/pillbig.h>
 #include "error_internal.h"
-
+#include "file_internal.h"
 
 /**
  *  Returns the minimum of two values.
  */
 #define MIN(x, y) ((x) < (y)) ? (x) : (y)
-
-
-
-struct PillBig
-{
-	FILE                *pillbig;          /**< pill.big file descriptor .*/
-	PillBigPlatform      platform;         /**< Blood Omen's pill.big platform. */
-	unsigned int         files_count;      /**< pill.big files count. */
-	PillBigFileEntry    *entries;          /**< File entries table. */
-	PillBigReplaceMode   replace_mode;     /**< Replacement mode. */
-	int                  close_on_free;    /**< 1 if pill.big FILE must be closed when freeing the object. */
-};
 
 
 

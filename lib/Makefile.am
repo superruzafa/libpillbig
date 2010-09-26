@@ -9,11 +9,13 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any interfaces have been removed since the last public release, then set age to 0.
 
-CURRENT = 0
-AGE = 0
+CURRENT = 1
+AGE = 1
 REVISION = 0
 
 lib_LTLIBRARIES = libpillbig.la
-libpillbig_la_SOURCES = file.c \
-                        error_internal.h error.c
+libpillbig_la_SOURCES = file_internal.h file.c \
+                        error_internal.h error.c \
+                        audio_internal.h audio.c adpcm.h adpcm.c vag.h vag.c
 libpillbig_la_LDFLAGS = -version-info $(CURRENT):$(REVISION):$(AGE)
+

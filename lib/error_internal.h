@@ -12,8 +12,8 @@
  *  @version SVN $Id$
  */
 
-#ifndef __PILLBIG_INTERNAL_ERROR_H__
-#define __PILLBIG_INTERNAL_ERROR_H__
+#ifndef __PILLBIG_ERROR_INTERNAL_H__
+#define __PILLBIG_ERROR_INTERNAL_H__
 
 #include <pillbig/error.h>
 
