@@ -18,13 +18,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <pillbig/pillbig.h>
+#include "common_internal.h"
 #include "error_internal.h"
 #include "file_internal.h"
-
-/**
- *  Returns the minimum of two values.
- */
-#define MIN(x, y) ((x) < (y)) ? (x) : (y)
 
 
 

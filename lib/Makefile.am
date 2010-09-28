@@ -14,8 +14,9 @@ AGE = 1
 REVISION = 0
 
 lib_LTLIBRARIES = libpillbig.la
-libpillbig_la_SOURCES = file_internal.h file.c \
-                        error_internal.h error.c \
-                        audio_internal.h audio.c adpcm.h adpcm.c vag.h vag.c
+libpillbig_la_SOURCES = file.c error.c audio.c adpcm.c vag.h vag.c
 libpillbig_la_LDFLAGS = -version-info $(CURRENT):$(REVISION):$(AGE)
+
+EXTRA_DIST = common_internal.h file_internal.h error_internal.h \
+                        audio_internal.h adpcm.h vag.h
 

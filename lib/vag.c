@@ -21,6 +21,7 @@
 #include <string.h>
 #include <pillbig/pillbig.h>
 #include "error_internal.h"
+#include "common_internal.h"
 #include "vag.h"
 
 
@@ -58,7 +59,8 @@ pillbig_audio_vag_decode(FILE *input, FILE *output,
 	{
 		flags = fgetc(input);
 	}
-	while (!feof(input) && remaining_samples > 0 && flags != 5)
+	while (!feof(input) && remaining_samples > 0
+	       && flags != 0x07 && flags != 0x05)
 	{
 		shift_factor = predict_nr & 0x0f;
 		predict_nr >>= 4;
@@ -116,18 +118,29 @@ pillbig_audio_vag_decode(FILE *input, FILE *output,
 }
 
 int
-pillbig_audio_vag_get_samples_count(FILE *input)
+pillbig_audio_vag_get_samples_count(FILE *input, int filesize)
 {
+	int file_position;
 	int samples_count = 0;
 	int flags;
 	int result;
+
+	file_position = ftell(input);
+
+	if (pillbig_audio_vag_has_header(input))
+	{
+		result = fseek(input, 64, SEEK_CUR);
+		SET_ERROR_RETURN_VALUE_IF_FAIL(result == 0, PillBigError_SystemError, -1);
+		filesize -= 64;
+	}
 
 	result = fseek(input, 1, SEEK_CUR);
 	SET_ERROR_RETURN_VALUE_IF_FAIL(result == 0, PillBigError_SystemError, -1);
 	flags = fgetc(input);
 	SET_ERROR_RETURN_VALUE_IF_FAIL(flags != EOF, PillBigError_SystemError, -1);
 
-	while (!feof(input) && flags != 5)
+	while (!feof(input) &&
+	       flags != 0x05 && flags != 0x07)
 	{
 		samples_count += 28;
 		result = fseek(input, 15, SEEK_CUR);
@@ -136,5 +149,19 @@ pillbig_audio_vag_get_samples_count(FILE *input)
 		SET_ERROR_RETURN_VALUE_IF_FAIL(flags != EOF, PillBigError_SystemError, -1);
 	}
 
-	return samples_count;
+	fseek(input, file_position, SEEK_SET);
+
+	return MAX(MIN((filesize - 16) / 16 * 28, samples_count), 0);
+}
+
+int
+pillbig_audio_vag_has_header(FILE *input)
+{
+	int magic32;
+	int result;
+
+	result = fread(&magic32, 4, 1, input);
+	fseek(input, -4, SEEK_CUR);
+
+	return magic32 == VAG_MAGIC_ID;
 }

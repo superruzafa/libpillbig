@@ -134,6 +134,19 @@ pillbig_audio_replace_from_filename(
 	PillBig pillbig, int index, char *filename,
 	PillBigAudioFormat input_format);
 
+/**
+ *  Gets the audio format.
+ *
+ *  @param pillbig
+ *  	PillBig object.
+ *  @param index
+ *  	pill.big file index.
+ *  @return
+ *  	Audio format if sucessful. PillBigAudioFormat_Unknown otherwise.
+ */
+PillBigAudioFormat
+pillbig_audio_get_format(PillBig pillbig, int index);
+
 END_C_DECLS
 
 #endif

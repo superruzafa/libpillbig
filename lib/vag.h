@@ -60,12 +60,20 @@ pillbig_audio_vag_decode(FILE *input, FILE *output,
  *  Counts the samples of the non-standard headerless VAG files.
  *
  *  @param input
- *  	Input VAG ADPCM stream.
+ *  	VAG ADPCM stream positionated at the start of the data.
+ *  @param filesize
+ *  	Input file size.
  *  @return
  *  	Samples count if successful. -1 otherwise.
  */
 int
-pillbig_audio_vag_count_samples(FILE *input);
+pillbig_audio_vag_count_samples(FILE *input, int filesize);
+
+/**
+ *  Guess either a VAG audio has a header or not.
+ */
+int
+pillbig_audio_vag_has_header(FILE *input);
 
 END_C_DECLS
 

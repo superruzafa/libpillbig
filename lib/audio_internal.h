@@ -15,6 +15,10 @@
 #ifndef __PILLBIG_AUDIO_INTERNAL_H__
 #define __PILLBIG_AUDIO_INTERNAL_H__
 
+#define VAG_MAGIC_ID 0x70474156
+
+
+
 typedef struct
 {
 	int samples_count;
