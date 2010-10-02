@@ -18,5 +18,6 @@
 #include <pillbig/error.h>
 #include <pillbig/file.h>
 #include <pillbig/audio.h>
+#include <pillbig/db.h>
 
 #endif

@@ -23,6 +23,7 @@ AC_ARG_WITH([test_pillbig],
 
 # Check for packages
 #PKG_CHECK_MODULES([CHECK], [check])
+PKG_CHECK_MODULES([XML2], [libxml-2.0])
 
 # Checks for programs.
 AC_PROG_CC
@@ -51,6 +52,7 @@ AC_CONFIG_FILES([Makefile
                  lib/Makefile
                  include/Makefile
                  src/Makefile
+                 share/Makefile
                  tests/Makefile
                  Doxyfile])
 AC_OUTPUT

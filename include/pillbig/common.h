@@ -23,4 +23,9 @@
 #	define END_C_DECLS
 #endif
 
+/**
+ *  pill.big file hashname.
+ */
+typedef unsigned int PillBigFileHash;
+
 #endif

@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <pillbig/common.h>
 #include <pillbig/error.h>
+#include <pillbig/db.h>
 
 
 
@@ -54,11 +55,6 @@ typedef enum
 	PillBigReplaceMode_AllowLargerFiles,     /**< The replace file size could be different than the one from pill.big. */
 }
 PillBigReplaceMode;
-
-/**
- *  pill.big file hashname.
- */
-typedef unsigned int PillBigFileHash;
 
 /**
  *  pill.big file entry.
@@ -189,6 +185,30 @@ pillbig_get_entry_index_by_hash(PillBig pillbig, PillBigFileHash hash);
  */
 const PillBigFileEntry *
 pillbig_get_entry(PillBig pillbig, int index);
+
+/**
+ *  Gets the files database.
+ *
+ *  @param pillbig
+ *  	PillBig object.
+ *  @return
+ *  	Current files database. NULL if none.
+ */
+PillBigDB
+pillbig_get_db(PillBig pillbig);
+
+/**
+ *  Sets the files database.
+ *
+ *  @param pillbig
+ *  	PillBig object.
+ *
+ *  @param db
+ *  	PillBigDB object.
+ */
+void
+pillbig_set_db(PillBig pillbig, PillBigDB db);
+
 
 /**
  *  Dumps the contents of a pill.big file into a stream.

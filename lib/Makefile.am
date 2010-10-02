@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include $(XML2_CFLAGS)
 
 # Library versioning, fount at http://www.freesoftwaremagazine.com/books/agaal/building_shared_libraries_once_using_autotools
 
@@ -14,9 +14,11 @@ AGE = 1
 REVISION = 0
 
 lib_LTLIBRARIES = libpillbig.la
-libpillbig_la_SOURCES = file.c error.c audio.c adpcm.c vag.h vag.c
-libpillbig_la_LDFLAGS = -version-info $(CURRENT):$(REVISION):$(AGE)
+libpillbig_la_SOURCES = file.c error.c audio.c adpcm.c vag.h vag.c db.c
+libpillbig_la_LDFLAGS = -version-info $(CURRENT):$(REVISION):$(AGE) \
+                        $(XML2_LIBS)
 
 EXTRA_DIST = common_internal.h file_internal.h error_internal.h \
-                        audio_internal.h adpcm.h vag.h
+             audio_internal.h adpcm.h vag.h \
+             db.h
 

@@ -282,6 +282,28 @@ pillbig_get_entry(PillBig pillbig, int index)
 	return (PillBigFileEntry *)&pillbig->entries[index];
 }
 
+void
+pillbig_set_db(PillBig pillbig, PillBigDB db)
+{
+	pillbig_error_clear();
+	SET_ERROR_RETURN_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject);
+	SET_ERROR_RETURN_IF_FAIL(db != NULL,
+		PillBigError_UnknownError);
+
+	pillbig->db = db;
+}
+
+PillBigDB
+pillbig_get_db(PillBig pillbig)
+{
+	pillbig_error_clear();
+	SET_ERROR_RETURN_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject);
+
+	return pillbig->db;
+}
+
 PillBigError
 pillbig_file_extract(PillBig pillbig, int index, FILE *output)
 {

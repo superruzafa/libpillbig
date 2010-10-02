@@ -22,6 +22,7 @@ struct PillBig
 {
 	FILE                *pillbig;          /**< pill.big file descriptor .*/
 	PillBigPlatform      platform;         /**< Blood Omen's pill.big platform. */
+	PillBigDB            db;               /**< Files database. */
 	unsigned int         files_count;      /**< pill.big files count. */
 	PillBigFileEntry    *entries;          /**< File entries table. */
 	PillBigReplaceMode   replace_mode;     /**< Replacement mode. */
