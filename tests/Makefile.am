@@ -1,8 +1,8 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include @CHECK_CFLAGS@
 
-TESTS = file
-check_PROGRAMS = file
-file_SOURCES = suite.c
-file_LDADD = ../lib/libpillbig.la @CHECK_LIBS@
-file_LDFLAGS = @CHECK_LDFLAGS@
-EXTRA_DIST = file.c
+TESTS = test
+check_PROGRAMS = test
+test_SOURCES = suite.c file.c db.c
+test_LDADD = ../lib/libpillbig.la @CHECK_LIBS@
+test_LDFLAGS = @CHECK_LDFLAGS@
+

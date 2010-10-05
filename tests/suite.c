@@ -21,15 +21,18 @@
 #	include <config.h>
 #endif
 
-#include "file.c"
+Suite *pillbig_file_test_get_suite();
 
 int
 main(int argc, char **argv)
 {
 	int tests_failed = 0;
 
-	Suite *suite = pillbig_file_test_get_suite();
-	SRunner *runner = srunner_create(suite);
+	SRunner *runner;
+
+	runner = srunner_create(pillbig_file_test_get_suite());
+	srunner_add_suite(runner, pillbig_db_test_get_suite());
+
 	srunner_run_all(runner, CK_VERBOSE);
 
 	tests_failed += srunner_ntests_failed(runner);

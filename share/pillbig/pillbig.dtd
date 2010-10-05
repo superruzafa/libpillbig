@@ -1,0 +1,10 @@
+<!ELEMENT pillbig (file*)>
+<!ATTLIST pillbig platform CDATA #REQUIRED>
+
+<!ELEMENT file (filename?,hash?,offset?,size?)>
+<!ATTLIST file index CDATA #REQUIRED>
+
+<!ELEMENT filename (#PCDATA)>
+<!ELEMENT hash (#PCDATA)>
+<!ELEMENT offset (#PCDATA)>
+<!ELEMENT size (#PCDATA)>

@@ -56,6 +56,7 @@ pillbig_db_open(char *filename);
  *  @param db
  *  	PillBigDB object.
  *  @return
+ *  	File entries count.
  *
  */
 int
@@ -86,7 +87,35 @@ pillbig_db_get_entry(PillBigDB db, int index);
  *  	File index if found. -1 otherwise.
  */
 int
-pillbig_db_get_entry_by_hash(PillBigDB db, PillBigFileHash hash);
+pillbig_db_get_entry_index_by_hash(PillBigDB db, PillBigFileHash hash);
+
+/**
+ *  Gets the index of a database file looking for its position.
+ *
+ *  @param db
+ *  	PillBigDB object.
+ *  @param position
+ *  	File entry position.
+ *  @return
+ *  	File entry index if database have an entry in that position.
+ *  	-1 otherwise.
+ */
+int
+pillbig_db_get_entry_index_by_position(PillBigDB db, int position);
+
+/**
+ *  Checks either a file entry exists in the database.
+ *
+ *  @param db
+ *  	PillBigDB object.
+ *  @param index
+ *  	File index.
+ *  @return
+ *  	1 if exists an entry for the file indexed.
+ *  	0 otherwise.
+ */
+int
+pillbig_db_has_entry(PillBigDB db, int index);
 
 /**
  *  Closes a database.

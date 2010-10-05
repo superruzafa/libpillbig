@@ -25,12 +25,12 @@
  */
 typedef enum
 {
-	PillBigAudioFormat_Unknown,       /**< Unknown audio format */
-	PillBigAudioFormat_Autodetect,    /**< Autodetect audio format */
-	PillBigAudioFormat_PCM,           /**< PCM audio format */
-	PillBigAudioFormat_VAG,           /**< PlayStation VAG audio format */
-	PillBigAudioFormat_ADPCM,         /**< ADPCM audio format */
-	PillBigAudioFormat_WAVE,          /**< RIFF wave format */
+	PillBigAudioFormat_Autodetect = -1,    /**< Autodetect audio format */
+	PillBigAudioFormat_Unknown = 0,        /**< Unknown audio format */
+	PillBigAudioFormat_PCM,                /**< PCM audio format */
+	PillBigAudioFormat_VAG,                /**< PlayStation VAG audio format */
+	PillBigAudioFormat_ADPCM,              /**< ADPCM audio format */
+	PillBigAudioFormat_WAVE,               /**< RIFF wave format */
 }
 PillBigAudioFormat;
 

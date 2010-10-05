@@ -28,7 +28,7 @@
 static PillBig pillbig;
 static FILE *pillbig_file;
 
-void
+static void
 setup()
 {
 	pillbig_file = fopen(TEST_PILLBIG_FILENAME, "r+b");
@@ -39,7 +39,7 @@ setup()
 	fail_unless(pillbig_error_get() == PillBigError_Success);
 }
 
-void
+static void
 teardown()
 {
 	pillbig_close(pillbig);

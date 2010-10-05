@@ -133,13 +133,30 @@ pillbig_db_get_entry(PillBigDB db, int index)
 }
 
 int
-pillbig_db_get_entry_by_hash(PillBigDB db, PillBigFileHash hash)
+pillbig_db_get_entry_index_by_hash(PillBigDB db, PillBigFileHash hash)
 {
-	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_UnknownError, NULL);
-	SET_ERROR_RETURN_VALUE_IF_FAIL(hash != NULL, PillBigError_UnknownError, NULL);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_UnknownError, -1);
 
 	char query[64];
 	sprintf(query, "/pillbig/file[hash='%X']/@index", hash);
+
+	return pillbig_db_get_xpath_query_as_int(db, query);
+}
+
+int
+pillbig_db_has_entry(PillBigDB db, int index)
+{
+	return pillbig_db_get_entry(db, index) != NULL;
+}
+
+int
+pillbig_db_get_entry_index_by_position(PillBigDB db, int position)
+{
+	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_UnknownError, -1);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(position >= 0, PillBigError_UnknownError, -1);
+
+	char query[96];
+	sprintf(query, "/pillbig/file[count(preceding-sibling::file) = %d]/@index", position);
 
 	return pillbig_db_get_xpath_query_as_int(db, query);
 }
