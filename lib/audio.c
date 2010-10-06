@@ -202,7 +202,7 @@ pillbig_audio_get_format(PillBig pillbig, int index)
 			{
 				format = PillBigAudioFormat_ADPCM;
 			}
-			else if (magic32 == VAG_MAGIC_ID)
+			else if (magic16 == 0x0200 || magic32 == VAG_MAGIC_ID)
 			{
 				format = PillBigAudioFormat_VAG;
 			}

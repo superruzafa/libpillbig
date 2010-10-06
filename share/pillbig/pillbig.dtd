@@ -1,10 +1,15 @@
 <!ELEMENT pillbig (file*)>
 <!ATTLIST pillbig platform CDATA #REQUIRED>
 
-<!ELEMENT file (filename?,hash?,offset?,size?)>
+<!ELEMENT file (filename?,hash?,offset?,size?,audio?)>
 <!ATTLIST file index CDATA #REQUIRED>
+<!ATTLIST file type (audio|bitmap|map|sprite|tilemap) #IMPLIED>
 
 <!ELEMENT filename (#PCDATA)>
 <!ELEMENT hash (#PCDATA)>
 <!ELEMENT offset (#PCDATA)>
 <!ELEMENT size (#PCDATA)>
+
+<!ELEMENT audio EMPTY>
+<!ATTLIST audio format (vag|adpcm|wave) #IMPLIED>
+<!ATTLIST audio rate CDATA #IMPLIED>

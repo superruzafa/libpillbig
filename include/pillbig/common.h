@@ -28,4 +28,18 @@
  */
 typedef unsigned int PillBigFileHash;
 
+/**
+ *  File types.
+ */
+typedef enum
+{
+	PillBigFileType_Unknown,    /**< Unknown file type. */
+	PillBigFileType_Audio,      /**< Audio file type. */
+	PillBigFileType_Bitmap,     /**< Bitmap file type. */
+	PillBigFileType_Tilemap,    /**< Tilemap file type. */
+	PillBigFileType_Sprite,     /**< Sprite file type. */
+	PillBigFileType_Map,        /**< Map file type. */
+}
+PillBigFileType;
+
 #endif

@@ -209,6 +209,19 @@ pillbig_get_db(PillBig pillbig);
 void
 pillbig_set_db(PillBig pillbig, PillBigDB db);
 
+/**
+ *  Gets the type of a file.
+ *
+ *  @param pillbig
+ *  	PillBig object.
+ *  @param index
+ *  	pill.big file index.
+ *  @return
+ *  	PillBigFileType if successful.
+ *  	PillBigFileType_Unknown otherwise.
+ */
+PillBigFileType
+pillbig_file_get_type(PillBig pillbig, int index);
 
 /**
  *  Dumps the contents of a pill.big file into a stream.

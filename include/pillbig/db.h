@@ -26,6 +26,7 @@ typedef struct PillBigDBEntry
 	int              offset;      /**< File offset. */
 	int              size;        /**< File size. */
 	char            *filename;    /**< Internal name. */
+	PillBigFileType  filetype;    /**< File type. */
 }
 PillBigDBEntry;
 

@@ -304,6 +304,28 @@ pillbig_get_db(PillBig pillbig)
 	return pillbig->db;
 }
 
+PillBigFileType
+pillbig_file_get_type(PillBig pillbig, int index)
+{
+	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
+		PillBigError_InvalidPillBigObject, PillBigFileType_Unknown);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(0 <= index && index < pillbig->files_count,
+		PillBigError_FileIndexOutOfRange, PillBigFileType_Unknown);
+
+	PillBigFileType filetype = PillBigFileType_Unknown;
+
+	if (pillbig->db != NULL)
+	{
+		const PillBigDBEntry *dbentry = pillbig_db_get_entry(pillbig->db, index);
+		if (dbentry != NULL)
+		{
+			filetype = dbentry->filetype;
+		}
+	}
+
+	return filetype;
+}
+
 PillBigError
 pillbig_file_extract(PillBig pillbig, int index, FILE *output)
 {

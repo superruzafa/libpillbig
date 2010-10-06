@@ -28,6 +28,7 @@ struct PillBigDB
 	xmlXPathContextPtr  xpathContext;
 	int                 files_count;
 	PillBigDBEntry    **entries;
+	PillBigFileType     filetype;
 };
 
 static char *
@@ -36,11 +37,15 @@ pillbig_db_get_xpath_query_as_string(PillBigDB db, char *query);
 static int
 pillbig_db_get_xpath_query_as_int(PillBigDB db, char *query);
 
+static PillBigFileType
+pillbig_db_get_xpath_query_as_filetype(PillBigDB db, char *query);
+
 
 
 PillBigDB
 pillbig_db_open(char *filename)
 {
+	pillbig_error_clear();
 	SET_ERROR_RETURN_VALUE_IF_FAIL(filename != "", PillBigError_InvalidFilename, NULL);
 
 	PillBigDB db = NULL;
@@ -83,6 +88,7 @@ pillbig_db_open(char *filename)
 int
 pillbig_db_get_files_count(PillBigDB db)
 {
+	pillbig_error_clear();
 	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_UnknownError, -1);
 
 	if (db->files_count == -1)
@@ -99,6 +105,7 @@ pillbig_db_get_files_count(PillBigDB db)
 const PillBigDBEntry *
 pillbig_db_get_entry(PillBigDB db, int index)
 {
+	pillbig_error_clear();
 	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_UnknownError, NULL);
 	SET_ERROR_RETURN_VALUE_IF_FAIL(0 <= index && index < db->files_count,
 		PillBigError_UnknownError, NULL);
@@ -127,6 +134,9 @@ pillbig_db_get_entry(PillBigDB db, int index)
 
 		sprintf(query, "/pillbig/file[@index='%d']/size", index);
 		db->entries[index]->size = pillbig_db_get_xpath_query_as_int(db, query);
+
+		sprintf(query, "/pillbig/file[@index='%d']/@type", index);
+		db->entries[index]->filetype = pillbig_db_get_xpath_query_as_filetype(db, query);
 	}
 
 	return db->entries[index];
@@ -135,6 +145,7 @@ pillbig_db_get_entry(PillBigDB db, int index)
 int
 pillbig_db_get_entry_index_by_hash(PillBigDB db, PillBigFileHash hash)
 {
+	pillbig_error_clear();
 	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_UnknownError, -1);
 
 	char query[64];
@@ -146,12 +157,14 @@ pillbig_db_get_entry_index_by_hash(PillBigDB db, PillBigFileHash hash)
 int
 pillbig_db_has_entry(PillBigDB db, int index)
 {
+	pillbig_error_clear();
 	return pillbig_db_get_entry(db, index) != NULL;
 }
 
 int
 pillbig_db_get_entry_index_by_position(PillBigDB db, int position)
 {
+	pillbig_error_clear();
 	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_UnknownError, -1);
 	SET_ERROR_RETURN_VALUE_IF_FAIL(position >= 0, PillBigError_UnknownError, -1);
 
@@ -164,6 +177,7 @@ pillbig_db_get_entry_index_by_position(PillBigDB db, int position)
 void
 pillbig_db_close(PillBigDB db)
 {
+	pillbig_error_clear();
 	SET_ERROR_RETURN_IF_FAIL(db != NULL, PillBigError_UnknownError);
 
 	int i = 0;
@@ -215,4 +229,27 @@ pillbig_db_get_xpath_query_as_string(PillBigDB db, char *query)
 	free(xpathObject);
 
 	return value;
+}
+
+static PillBigFileType
+pillbig_db_get_xpath_query_as_filetype(PillBigDB db, char *query)
+{
+	PillBigFileType filetype = PillBigFileType_Unknown;
+	char *value;
+
+	xmlXPathObjectPtr xpathObject = xmlXPathEvalExpression(query, db->xpathContext);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(xpathObject != NULL, PillBigError_SystemError, PillBigFileType_Unknown);
+	value = xmlXPathCastNodeSetToString(xpathObject->nodesetval);
+
+	if (strlen(value) > 0)
+	{
+		     if (strcmp(value, "audio") == 0)   filetype = PillBigFileType_Audio;
+		else if (strcmp(value, "bitmap") == 0)  filetype = PillBigFileType_Bitmap;
+		else if (strcmp(value, "map") == 0)     filetype = PillBigFileType_Map;
+		else if (strcmp(value, "sprite") == 0)  filetype = PillBigFileType_Sprite;
+		else if (strcmp(value, "tilemap") == 0) filetype = PillBigFileType_Tilemap;
+	}
+	free(xpathObject);
+
+	return filetype;
 }
