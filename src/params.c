@@ -1,19 +1,37 @@
+/*
+ *  libpillbig
+ *  A library to deal with Blood Omen: Legacy of Kain pill.big files.
+ */
+
+/**
+ *  @file
+ *  @brief
+ *  	Parameters parsing. Implementation.
+ *
+ *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
+ *  @version SVN $Id$
+ */
+
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <assert.h>
 #include "params.h"
 
+static int
+str_to_number(const char *string);
+
 static PillBigCMDInfo
-parse_info(char *arg);
+parse_info(char *arg, int *error);
 
 static PillBigCMDFormat
-parse_audio_format(char *arg);
+parse_audio_format(char *arg, int *error);
 
 static PillBigCMDFormat
-parse_bitmap_format(char *arg);
+parse_bitmap_format(char *arg, int *error);
 
 static PillBigReplaceMode
-parse_replace_mode(char *arg);
+parse_replace_mode(char *arg, int *error);
 
 
 
@@ -43,6 +61,7 @@ pillbig_cmd_params_decode(int argc, char **argv)
 	memset(params, 0, sizeof(PillBigCMDParams));
 
 	params->command = argv[0];
+	params->mode = -1;
 
 	int c;
 	int index = 0;
@@ -54,23 +73,29 @@ pillbig_cmd_params_decode(int argc, char **argv)
 		switch (c)
 		{
 			case 'h': // --help
+				if (params->mode != -1) params->error = 1;
 				params->mode = PillBigCMDMode_Help;
 				break;
 			case 'v': // --version
+				if (params->mode != -1) params->error = 1;
 				params->mode = PillBigCMDMode_Version;
 				break;
 			case 'i': // --info
+				if (params->mode != -1 && params->mode != PillBigCMDMode_Info) params->error = 1;
 				params->mode = PillBigCMDMode_Info;
-				params->show_info |= parse_info(optarg);
+				params->show_info |= parse_info(optarg, &params->error);
 				break;
 			case 'x': // --extract
+				if (params->mode != -1) params->error = 1;
 				params->mode = PillBigCMDMode_Extract;
 				break;
 			case 'r': // --replace
+				if (params->mode != -1) params->error = 1;
 				params->mode = PillBigCMDMode_Replace;
-				params->replace_mode = parse_replace_mode(optarg);
+				params->replace_mode = parse_replace_mode(optarg, &params->error);
 				break;
 			case 's': // --hash
+				if (params->mode != -1) params->error = 1;
 				params->mode = PillBigCMDMode_Hash;
 				break;
 
@@ -82,8 +107,8 @@ pillbig_cmd_params_decode(int argc, char **argv)
 				params->database = optarg;
 				break;
 			case 'c': // --convert
-				params->audio_format = parse_audio_format(optarg);
-				params->bitmap_format = parse_bitmap_format(optarg);
+				params->audio_format = parse_audio_format(optarg, &params->error);
+				params->bitmap_format = parse_bitmap_format(optarg, &params->error);
 				break;
 			case 'n': // -names
 				if (strcmp(optarg, "internal") != 0)
@@ -95,15 +120,24 @@ pillbig_cmd_params_decode(int argc, char **argv)
 
 	}
 
-	params->files_count = argc - optind;
-	params->indices = (int *)calloc(params->files_count, sizeof(int));
+	int argc_count = argc - optind;
+	params->indices = (int *)calloc(argc_count, sizeof(int));
+	// TODO: Check memory allocation
 
 	int i = 0;
-	while (i < params->files_count)
+	while (optind < argc && !params->error)
 	{
-		params->indices[i++] = atoi(argv[optind++]);
+		int value = str_to_number(argv[optind++]);
+		if (value != -1)
+		{
+			params->files_count++;
+			params->indices[i++] = value;
+		}
+		else
+		{
+			params->error = 1;
+		}
 	}
-
 
 	return params;
 }
@@ -123,9 +157,40 @@ pillbig_cmd_params_free(PillBigCMDParams *params)
 
 
 
-static PillBigCMDInfo
-parse_info(char *arg)
+static int
+str_to_number(const char *string)
 {
+	int value = 0;
+	const char *ptr = string;
+
+	while (value != -1 && ptr != NULL && *ptr != '\0')
+	{
+		value *= 10;
+		switch (*ptr++)
+		{
+			case '0': value += 0; break;
+			case '1': value += 1; break;
+			case '2': value += 2; break;
+			case '3': value += 3; break;
+			case '4': value += 4; break;
+			case '5': value += 5; break;
+			case '6': value += 6; break;
+			case '7': value += 7; break;
+			case '8': value += 8; break;
+			case '9': value += 9; break;
+			default:
+				value = -1;
+				break;
+		}
+	}
+
+	return value;
+}
+
+static PillBigCMDInfo
+parse_info(char *arg, int *error)
+{
+	assert(error != NULL);
 	PillBigCMDInfo info = PillBigCMDInfo_All;
 
 	     if (arg == NULL)                info = PillBigCMDInfo_All;
@@ -139,37 +204,43 @@ parse_info(char *arg)
 	else if (strcmp(arg, "s") == 0)      info = PillBigCMDInfo_Size;
 	else if (strcmp(arg, "name") == 0)   info = PillBigCMDInfo_Name;
 	else if (strcmp(arg, "n") == 0)      info = PillBigCMDInfo_Name;
+	else *error = 1;
 
 	return info;
 }
 
 static PillBigCMDFormat
-parse_audio_format(char *arg)
+parse_audio_format(char *arg, int *error)
 {
+	assert(error != NULL);
 	PillBigCMDFormat format = PillBigCMDFormat_Auto;
 
          if (arg == NULL)             format = PillBigCMDFormat_Auto;
     else if (strcmp(arg, "pcm") == 0) format = PillBigCMDFormat_PCM;
 	else if (strcmp(arg, "wav") == 0) format = PillBigCMDFormat_WAV;
+	else *error = 1;
 
 	return format;
 }
 
 static PillBigCMDFormat
-parse_bitmap_format(char *arg)
+parse_bitmap_format(char *arg, int *error)
 {
+	assert(error != NULL);
 	PillBigCMDFormat format = PillBigCMDFormat_Auto;
 
          if (arg == NULL)             format = PillBigCMDFormat_Auto;
     else if (strcmp(arg, "bmp") == 0) format = PillBigCMDFormat_BMP;
 	else if (strcmp(arg, "png") == 0) format = PillBigCMDFormat_PNG;
+	else *error = 1;
 
 	return format;
 }
 
 static PillBigReplaceMode
-parse_replace_mode(char *arg)
+parse_replace_mode(char *arg, int *error)
 {
+	assert(error != NULL);
 	PillBigReplaceMode mode = PillBigReplaceMode_Strict;
 
 	     if (arg == NULL)                 mode = PillBigReplaceMode_Strict;
@@ -178,7 +249,7 @@ parse_replace_mode(char *arg)
 	else if (strcmp(arg, "s") == 0)       mode = PillBigReplaceMode_AllowShorterFiles;
 	else if (strcmp(arg, "larger") == 0)  mode = PillBigReplaceMode_AllowLargerFiles;
 	else if (strcmp(arg, "l") == 0)       mode = PillBigReplaceMode_AllowLargerFiles;
+	else *error = 1;
 
 	return mode;
-
 }

@@ -1,3 +1,17 @@
+/*
+ *  libpillbig
+ *  A library to deal with Blood Omen: Legacy of Kain pill.big files.
+ */
+
+/**
+ *  @file
+ *  @brief
+ *  	Command line tool.
+ *
+ *  @author  Alfonso Ruzafa <superruzafa@gmail.com>
+ *  @version SVN $Id$
+ */
+
 #include <stdlib.h>
 #include <libintl.h>
 #include <assert.h>
@@ -28,6 +42,9 @@ pillbig_cmd_infopb(PillBig pillbig, PillBigCMDParams *params);
 void
 pillbig_cmd_info(PillBig pillbig, int index, PillBigCMDParams *params);
 
+void
+pillbig_cmd_unimplemented();
+
 typedef
 void (* PillBigCMDActionCallback)(PillBig pillbig, int index, PillBigCMDParams *params);
 
@@ -42,6 +59,16 @@ main (int argc, char **argv)
 	PillBigCMDActionCallback callback = NULL;
 	assert(params != NULL);
 
+	if (params->error)
+	{
+		pillbig_cmd_help(params);
+		pillbig_cmd_params_free(params);
+		exit(EXIT_FAILURE);
+	}
+
+	/*
+	 * Open the pill.big file for those modes that require it.
+	 */
 	switch (params->mode)
 	{
 		case PillBigCMDMode_Info:
@@ -50,14 +77,9 @@ main (int argc, char **argv)
 			pillbig = pillbig_cmd_open(params);
 			if (pillbig == NULL)
 			{
-				if (params->pillbig == NULL)
-				{
-					fprintf(stderr, _("Cannot find any pill.big file\n"));
-				}
-				else
-				{
-					fprintf(stderr, _("Cannot open the specified pill.big file\n"));
-				}
+				fprintf(stderr, (params->pillbig == NULL) ?
+					_("Cannot find any pill.big file.\n") :
+					_("Cannot open the specified pill.big file.\n"));
 				exit(EXIT_FAILURE);
 			}
 			break;
@@ -77,7 +99,9 @@ main (int argc, char **argv)
 				db = pillbig_cmd_db_open(pillbig_get_platform(pillbig), params);
 				if (db == NULL)
 				{
-					fprintf(stderr, _("Cannot open the specified database file.\n"));
+					fprintf(stderr, (params->database == NULL) ?
+						_("Cannot find any pill.big database.\n") :
+						_("Cannot open the specified database file.\n"));
 					exit(EXIT_FAILURE);
 				}
 				pillbig_set_db(pillbig, db);
@@ -99,6 +123,11 @@ main (int argc, char **argv)
 			break;
 		case PillBigCMDMode_Version:
 			pillbig_cmd_version();
+			break;
+		case PillBigCMDMode_Extract:
+		case PillBigCMDMode_Hash:
+		case PillBigCMDMode_Replace:
+			pillbig_cmd_unimplemented();
 			break;
 		case PillBigCMDMode_Help:
 		default:
@@ -154,7 +183,7 @@ pillbig_cmd_open(PillBigCMDParams *params)
 	assert(params != NULL);
 
 	PillBig pillbig = NULL;
-	char *filenames[] =
+	static char *filenames[] =
 	{
 		"PILL.BIG",
 		"pill.big",
@@ -171,6 +200,10 @@ pillbig_cmd_open(PillBigCMDParams *params)
 		while (pillbig == NULL && *filename != NULL)
 		{
 			pillbig = pillbig_open_from_filename(*filename);
+			if (pillbig != NULL)
+			{
+				params->pillbig = *filename;
+			}
 			filename++;
 		}
 	}
@@ -229,7 +262,8 @@ pillbig_cmd_help(PillBigCMDParams *params)
 {
 	assert(params != NULL);
 
-	printf("Usage: %s [MODE] [OPTIONS] [INDICES] [FILENAMES]\n", params->command);
+	puts(_("Manage Blood Omen's pill.big files."));
+	printf(_("Usage: %s [MODE] [OPTIONS] [INDICES] [FILENAMES]\n"), params->command);
 
 	puts(_("Modes:\n\
     -h, --help                   Display this help and exit\n\
@@ -237,7 +271,7 @@ pillbig_cmd_help(PillBigCMDParams *params)
     -i, --info=INFO              Show information about pill.big files\n\
     -x, --extract                Extract files from pill.big\n\
     -r, --replace=REPLACEMODE    Replace pill.big files with external ones\n\
-    -h, --hash                   Calculate Blood Omen hashnames from filenames"));
+    -s, --hash                   Calculate Blood Omen hashnames from filenames"));
 
     puts("");
 
@@ -280,7 +314,7 @@ pillbig_cmd_help(PillBigCMDParams *params)
 void
 pillbig_cmd_version()
 {
-	printf(_("%s %s, Copyright (C) %d %s\n"), PACKAGE_NAME, PACKAGE_VERSION, 2010, PACKAGE_BUGREPORT);
+	printf(_("%s %s, Copyright (C) %s\n"), PACKAGE_NAME, PACKAGE_VERSION, PACKAGE_BUGREPORT);
 	printf(_("%s comes with ABSOLUTELY NO WARRANTY.\n\
     This is free software, and you are welcome to redistribute\n\
     it under certain conditions.\n"), PACKAGE_NAME);
@@ -344,4 +378,10 @@ pillbig_cmd_info(PillBig pillbig, int index, PillBigCMDParams *params)
 	if (params->show_info & PillBigCMDInfo_Hash)   printf(_("Hash: %d\n"), entry->hash);
 	if (params->show_info & PillBigCMDInfo_Offset) printf(_("Offset: %d\n"), entry->offset);
 	if (params->show_info & PillBigCMDInfo_Size)   printf(_("Size: %d\n"), entry->size);
+}
+
+void
+pillbig_cmd_unimplemented()
+{
+	puts(_("This feature is not yet implemented."));
 }
