@@ -67,6 +67,8 @@ typedef struct
 	char                 *pattern;         /**< Filename pattern. */
 	int                   files_count;     /**< Count of file indices. */
 	int                  *indices;         /**< File indices. */
+	int                   filenames_count; /**< Count of filenames. */
+	char                **filenames;       /**< Filenames */
 }
 PillBigCMDParams;
 

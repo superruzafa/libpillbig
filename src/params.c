@@ -121,22 +121,40 @@ pillbig_cmd_params_decode(int argc, char **argv)
 	}
 
 	int argc_count = argc - optind;
-	params->indices = (int *)calloc(argc_count, sizeof(int));
-	// TODO: Check memory allocation
-
 	int i = 0;
-	while (optind < argc && !params->error)
+
+	switch (params->mode)
 	{
-		int value = str_to_number(argv[optind++]);
-		if (value != -1)
-		{
-			params->files_count++;
-			params->indices[i++] = value;
-		}
-		else
-		{
-			params->error = 1;
-		}
+		case PillBigCMDMode_Info:
+		case PillBigCMDMode_Extract:
+		case PillBigCMDMode_Replace:
+			params->indices = (int *)calloc(argc_count, sizeof(int));
+			// TODO: Check memory allocation
+
+			while (optind < argc && !params->error)
+			{
+				int value = str_to_number(argv[optind++]);
+				if (value != -1)
+				{
+					params->files_count++;
+					params->indices[i++] = value;
+				}
+				else
+				{
+					params->error = 1;
+				}
+			}
+			break;
+		case PillBigCMDMode_Hash:
+			params->filenames = (char **)calloc(argc_count, sizeof(char **));
+			// TODO: Check memory allocation
+
+			while (optind < argc)
+			{
+				params->filenames_count++;
+				params->filenames[i++] = argv[optind++];
+			}
+			break;
 	}
 
 	return params;
@@ -150,6 +168,10 @@ pillbig_cmd_params_free(PillBigCMDParams *params)
 		if (params->indices != NULL)
 		{
 			free(params->indices);
+		}
+		if (params->filenames != NULL)
+		{
+			free(params->filenames);
 		}
 		free(params);
 	}

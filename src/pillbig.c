@@ -43,10 +43,14 @@ void
 pillbig_cmd_info(PillBig pillbig, int index, PillBigCMDParams *params);
 
 void
+pillbig_cmd_hash(PillBigCMDParams *params);
+
+void
 pillbig_cmd_unimplemented();
 
 typedef
 void (* PillBigCMDActionCallback)(PillBig pillbig, int index, PillBigCMDParams *params);
+
 
 
 int
@@ -124,8 +128,10 @@ main (int argc, char **argv)
 		case PillBigCMDMode_Version:
 			pillbig_cmd_version();
 			break;
-		case PillBigCMDMode_Extract:
 		case PillBigCMDMode_Hash:
+			pillbig_cmd_hash(params);
+			break;
+		case PillBigCMDMode_Extract:
 		case PillBigCMDMode_Replace:
 			pillbig_cmd_unimplemented();
 			break;
@@ -283,6 +289,16 @@ pillbig_cmd_help(PillBigCMDParams *params)
 
 	puts("");
 
+	puts(_("Information:\n\
+    a, all (default)             Show all available fields\n\
+    i, index                     Include index information\n\
+    h, hash                      Include hashes information\n\
+    o, offset                    Include offsets information\n\
+    s, size                      Include sizes information\n\
+    n, name                      Include names information"));
+
+	puts("");
+
 	puts(_("Replace modes:\n\
     s, strict (default)          External and internal files must have exactly the same size\n\
     t, shorter                   External files can be shorter than internal files\n\
@@ -297,16 +313,6 @@ pillbig_cmd_help(PillBigCMDParams *params)
 
 	puts("");
 
-	puts(_("Infos:\n\
-    a, all (default)             Show all available fields\n\
-    i, index                     Include index information\n\
-    h, hash                      Include hashes information\n\
-    o, offset                    Include offsets information\n\
-    s, size                      Include sizes information\n\
-    n, name                      Include names information"));
-
-	puts("");
-
 	puts(_("Patterns:\n\
     Any string where all ocurrences of * will be replaced by the file index"));
 }
@@ -316,8 +322,8 @@ pillbig_cmd_version()
 {
 	printf(_("%s %s, Copyright (C) %s\n"), PACKAGE_NAME, PACKAGE_VERSION, PACKAGE_BUGREPORT);
 	printf(_("%s comes with ABSOLUTELY NO WARRANTY.\n\
-    This is free software, and you are welcome to redistribute\n\
-    it under certain conditions.\n"), PACKAGE_NAME);
+This is free software, and you are welcome to redistribute\n\
+it under certain conditions.\n"), PACKAGE_NAME);
 }
 
 void
@@ -375,9 +381,31 @@ pillbig_cmd_info(PillBig pillbig, int index, PillBigCMDParams *params)
 
 	if (params->show_info & PillBigCMDInfo_Index)  printf(_("Index: %04d\n"), index);
 	if (params->show_info & PillBigCMDInfo_Name)   printf(_("Filename: %s\n"), filename);
-	if (params->show_info & PillBigCMDInfo_Hash)   printf(_("Hash: %d\n"), entry->hash);
+	if (params->show_info & PillBigCMDInfo_Hash)   printf(_("Hash: 0x%08X\n"), entry->hash);
 	if (params->show_info & PillBigCMDInfo_Offset) printf(_("Offset: %d\n"), entry->offset);
 	if (params->show_info & PillBigCMDInfo_Size)   printf(_("Size: %d\n"), entry->size);
+}
+
+void
+pillbig_cmd_hash(PillBigCMDParams *params)
+{
+	assert(params != NULL);
+
+	PillBigFileHash hash;
+	int i = 0;
+
+	for (i = 0; i < params->filenames_count; i++)
+	{
+		hash = pillbig_get_hash_by_filename(params->filenames[i]);
+		if (hash == -1)
+		{
+			printf(_("%s: Cannot calculate hashname\n"), params->filenames[i]);
+		}
+		else
+		{
+			printf("%s: 0x%08X\n", params->filenames[i], hash);
+		}
+	}
 }
 
 void
