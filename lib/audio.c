@@ -148,7 +148,7 @@ pillbig_audio_extract(PillBig pillbig, int index, FILE *output,
 
 PillBigError
 pillbig_audio_extract_to_filename(
-	PillBig pillbig, int index, char *filename,
+	PillBig pillbig, int index, const char *filename,
     PillBigAudioFormat output_format)
 {
 	pillbig_error_clear();
@@ -176,7 +176,7 @@ pillbig_audio_replace(
 
 PillBigError
 pillbig_audio_replace_from_filename(
-	PillBig pillbig, int index, char *filename,
+	PillBig pillbig, int index, const char *filename,
 	PillBigAudioFormat input_format)
 {
 	pillbig_error_set(PillBigError_NotImplemented);

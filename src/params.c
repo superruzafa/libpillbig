@@ -51,7 +51,7 @@ pillbig_cmd_params_decode(int argc, char **argv)
 		{"pillbig",  required_argument, 0, 'p'},
 		{"database", optional_argument, 0, 'd'},
 		{"convert",  required_argument, 0, 'c'},
-		{"name",     required_argument, 0, 'n'},
+		{"pattern",  required_argument, 0, 't'},
 
 		{0,          0,                 0, 0}
 	};
@@ -67,7 +67,7 @@ pillbig_cmd_params_decode(int argc, char **argv)
 	int index = 0;
 	while (1)
 	{
-		c = getopt_long(argc, argv, "hvi::xr::sp:d::c:n:", options, &index);
+		c = getopt_long(argc, argv, "hvi::xr::sp:d::c:t:", options, &index);
 		if (c == -1) break;
 
 		switch (c)
@@ -110,10 +110,10 @@ pillbig_cmd_params_decode(int argc, char **argv)
 				params->audio_format = parse_audio_format(optarg, &params->error);
 				params->bitmap_format = parse_bitmap_format(optarg, &params->error);
 				break;
-			case 'n': // -names
-				if (strcmp(optarg, "internal") != 0)
+			case 't': // --pattern
+				if (strcmp(optarg, "") != 0)
 				{
-					params->pattern = optarg;
+					params->filename_pattern = optarg;
 				}
 				break;
 		}
@@ -240,7 +240,6 @@ parse_audio_format(char *arg, int *error)
          if (arg == NULL)             format = PillBigCMDFormat_Auto;
     else if (strcmp(arg, "pcm") == 0) format = PillBigCMDFormat_PCM;
 	else if (strcmp(arg, "wav") == 0) format = PillBigCMDFormat_WAV;
-	else *error = 1;
 
 	return format;
 }
@@ -254,7 +253,6 @@ parse_bitmap_format(char *arg, int *error)
          if (arg == NULL)             format = PillBigCMDFormat_Auto;
     else if (strcmp(arg, "bmp") == 0) format = PillBigCMDFormat_BMP;
 	else if (strcmp(arg, "png") == 0) format = PillBigCMDFormat_PNG;
-	else *error = 1;
 
 	return format;
 }

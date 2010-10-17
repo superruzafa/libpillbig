@@ -15,8 +15,12 @@
 #include <stdlib.h>
 #include <libintl.h>
 #include <assert.h>
+#include <string.h>
 #include <pillbig/pillbig.h>
 #include "params.h"
+
+#define DEFAULT_FILENAME_PATTERN "file*"
+#define PATTERN_WILDCARD_CHAR '*'
 
 #ifdef HAVE_CONFIG_H
 #	include <config.h>
@@ -46,7 +50,19 @@ void
 pillbig_cmd_hash(PillBigCMDParams *params);
 
 void
+pillbig_cmd_extract(PillBig pillbig, int index, PillBigCMDParams *params);
+
+void
 pillbig_cmd_unimplemented();
+
+const char *
+pillbig_get_filename(PillBig pillbig, int index, PillBigCMDParams *params);
+
+void
+pillbig_fill_filename(const char *pattern, int index, char *buffer, int buffer_length);
+
+PillBigFileType
+pillbig_get_filetype(PillBig pillbig, int index, PillBigCMDParams *params);
 
 typedef
 void (* PillBigCMDActionCallback)(PillBig pillbig, int index, PillBigCMDParams *params);
@@ -56,8 +72,7 @@ void (* PillBigCMDActionCallback)(PillBig pillbig, int index, PillBigCMDParams *
 int
 main (int argc, char **argv)
 {
-	PillBig pillbig = pillbig_open_from_filename("PILL.BIG-PC");
-	char buffer[16];
+	PillBig pillbig = NULL;
 	PillBigDB db = NULL;
 	PillBigCMDParams *params = pillbig_cmd_params_decode(argc, argv);
 	PillBigCMDActionCallback callback = NULL;
@@ -132,6 +147,8 @@ main (int argc, char **argv)
 			pillbig_cmd_hash(params);
 			break;
 		case PillBigCMDMode_Extract:
+			callback = pillbig_cmd_extract;
+			break;
 		case PillBigCMDMode_Replace:
 			pillbig_cmd_unimplemented();
 			break;
@@ -366,18 +383,7 @@ pillbig_cmd_info(PillBig pillbig, int index, PillBigCMDParams *params)
 	PillBigDB db = pillbig_get_db(pillbig);
 	const PillBigFileEntry *entry   = pillbig_get_entry(pillbig, index);
 	const PillBigDBEntry   *dbentry = NULL;
-	char buffer[32];
-	char *filename = buffer;
-	sprintf(buffer, "file%04d", index);
-
-	if (db != NULL)
-	{
-		dbentry = pillbig_db_get_entry(db, index);
-		if (dbentry != NULL && dbentry->filename != NULL)
-		{
-			filename = dbentry->filename;
-		}
-	}
+	const char *filename = pillbig_get_filename(pillbig, index, params);
 
 	if (params->show_info & PillBigCMDInfo_Index)  printf(_("Index: %04d\n"), index);
 	if (params->show_info & PillBigCMDInfo_Name)   printf(_("Filename: %s\n"), filename);
@@ -399,7 +405,7 @@ pillbig_cmd_hash(PillBigCMDParams *params)
 		hash = pillbig_get_hash_by_filename(params->filenames[i]);
 		if (hash == -1)
 		{
-			printf(_("%s: Cannot calculate hashname\n"), params->filenames[i]);
+			printf(_("%s: Cannot calculate the hashname\n"), params->filenames[i]);
 		}
 		else
 		{
@@ -409,7 +415,134 @@ pillbig_cmd_hash(PillBigCMDParams *params)
 }
 
 void
+pillbig_cmd_extract(PillBig pillbig, int index, PillBigCMDParams *params)
+{
+	assert(pillbig != NULL);
+	assert(0 <= index && index < pillbig_get_files_count(pillbig));
+	assert(params != NULL);
+
+	PillBigDB db = pillbig_get_db(pillbig);
+	const PillBigDBEntry *dbentry = NULL;
+	PillBigFileType filetype = pillbig_get_filetype(pillbig, index, params);
+	PillBigAudioFormat audio_output_format;
+	const char *filename = pillbig_get_filename(pillbig, index, params);
+	assert(filename != NULL);
+
+	switch (filetype)
+	{
+		case PillBigFileType_Audio:
+			switch (params->audio_format)
+			{
+				case PillBigCMDFormat_PCM: audio_output_format = PillBigAudioFormat_PCM; break;
+				case PillBigCMDFormat_WAV: audio_output_format = PillBigAudioFormat_WAVE; break;
+				default: audio_output_format = PillBigAudioFormat_Unknown; break;
+			}
+			pillbig_audio_extract_to_filename(pillbig, index, filename, audio_output_format);
+			break;
+		default:
+			pillbig_file_extract_to_filename(pillbig, index, filename);
+			break;
+	}
+
+	if (pillbig_error_get() == PillBigError_Success)
+	{
+		printf(_("%s(%04d) -> %s: OK\n"), params->pillbig, index, filename);
+	}
+	else
+	{
+		fprintf(stderr, _("%s(%04d) -> %s: Error!\n"), params->pillbig, index, filename);
+	}
+}
+
+void
 pillbig_cmd_unimplemented()
 {
-	puts(_("This feature is not yet implemented."));
+	puts(_("This feature is not yet implemented.\n"));
+}
+
+const char *
+pillbig_get_filename(PillBig pillbig, int index, PillBigCMDParams *params)
+{
+	assert(pillbig != NULL);
+	assert(0 <= index && index < pillbig_get_files_count(pillbig));
+	assert(params != NULL);
+
+	PillBigDB db = pillbig_get_db(pillbig);
+	const PillBigDBEntry *dbentry = NULL;
+	static char buffer[256];
+	memset(buffer, 0, 256);
+
+	if (db != NULL)
+	{
+		dbentry = pillbig_db_get_entry(db, index);
+	}
+
+	if (params->filename_pattern != NULL)
+	{
+		pillbig_fill_filename(params->filename_pattern, index, buffer, 256);
+	}
+	else if (dbentry != NULL && dbentry->filename != NULL)
+	{
+		// TODO: strip directory from database filename
+		strcpy(buffer, dbentry->filename);
+	}
+	else
+	{
+		pillbig_fill_filename(DEFAULT_FILENAME_PATTERN, index, buffer, 256);
+	}
+
+	return buffer;
+}
+
+void
+pillbig_fill_filename(const char *pattern, int index, char *buffer, int buffer_length)
+{
+	assert(pattern != NULL);
+	assert(index >= 0);
+	assert(buffer != NULL);
+	assert(buffer_length > 0);
+
+	memset(buffer, 0, buffer_length);
+	while (buffer_length > 0 && *pattern != '\0')
+	{
+		if (*pattern == PATTERN_WILDCARD_CHAR)
+		{
+			if (buffer_length >= 4)
+			{
+				sprintf(buffer, "%04d", index);
+			}
+			buffer_length -= 4;
+			buffer += 4;
+		}
+		else
+		{
+			*buffer = *pattern;
+			buffer++;
+			buffer_length--;
+		}
+		pattern++;
+	}
+}
+
+PillBigFileType
+pillbig_get_filetype(PillBig pillbig, int index, PillBigCMDParams *params)
+{
+	assert(pillbig != NULL);
+	assert(0 <= index & index < pillbig_get_files_count(pillbig));
+	assert(params != NULL);
+
+	PillBigFileType filetype = PillBigFileType_Unknown;
+	PillBigDB db = pillbig_get_db(pillbig);
+	const PillBigDBEntry *dbentry = NULL;
+
+	if (db != NULL)
+	{
+		dbentry = pillbig_db_get_entry(db, index);
+		if (dbentry != NULL)
+		{
+			filetype = dbentry->filetype;
+		}
+	}
+
+	return filetype;
 }

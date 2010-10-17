@@ -115,7 +115,7 @@ pillbig_open(FILE *input)
 }
 
 PillBig
-pillbig_open_from_filename(char *filename)
+pillbig_open_from_filename(const char *filename)
 {
 	pillbig_error_clear();
 	SET_ERROR_RETURN_VALUE_IF_FAIL(filename != NULL,
@@ -191,7 +191,7 @@ pillbig_get_files_count(PillBig pillbig)
 }
 
 PillBigFileHash
-pillbig_get_hash_by_filename(char *filename)
+pillbig_get_hash_by_filename(const char *filename)
 {
 	#define HASH_BUFFER_SIZE 64
 	/*
@@ -367,7 +367,7 @@ pillbig_file_extract(PillBig pillbig, int index, FILE *output)
 }
 
 PillBigError
-pillbig_file_extract_to_filename(PillBig pillbig, int index, char *filename)
+pillbig_file_extract_to_filename(PillBig pillbig, int index, const char *filename)
 {
 	pillbig_error_clear();
 	SET_RETURN_ERROR_IF_FAIL(pillbig != NULL,

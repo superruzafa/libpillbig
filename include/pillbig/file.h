@@ -98,7 +98,7 @@ pillbig_open(FILE *input);
  *  	NULL otherwise.
  */
 PillBig
-pillbig_open_from_filename(char *filename);
+pillbig_open_from_filename(const char *filename);
 
 /**
  *  Gets the platform for the Blood Omen's pill.big metafile.
@@ -157,7 +157,7 @@ pillbig_get_files_count(PillBig pillbig);
  *  	pill.big hashname if successful. -1 otherwise.
  */
 PillBigFileHash
-pillbig_get_hash_by_filename(char *filename);
+pillbig_get_hash_by_filename(const char *filename);
 
 /**
  *  Gets the index of a pill.big file looking for its hashname.
@@ -251,7 +251,7 @@ pillbig_file_extract(PillBig pillbig, int index, FILE *output);
  *  	Operation result.
  */
 PillBigError
-pillbig_file_extract_to_filename(PillBig pillbig, int index, char *filename);
+pillbig_file_extract_to_filename(PillBig pillbig, int index, const char *filename);
 
 /**
  *  Replaces the contents of a pill.big file with external raw data.

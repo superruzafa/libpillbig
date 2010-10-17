@@ -73,7 +73,7 @@ pillbig_audio_extract(
  */
 PillBigError
 pillbig_audio_extract_to_filename(
-	PillBig pillbig, int index, char *filename,
+	PillBig pillbig, int index, const char *filename,
     PillBigAudioFormat output_format);
 
 /**
@@ -131,7 +131,7 @@ pillbig_audio_replace(
  */
 PillBigError
 pillbig_audio_replace_from_filename(
-	PillBig pillbig, int index, char *filename,
+	PillBig pillbig, int index, const char *filename,
 	PillBigAudioFormat input_format);
 
 /**

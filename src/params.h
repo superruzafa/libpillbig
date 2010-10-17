@@ -54,21 +54,21 @@ PillBigCMDInfo;
 
 typedef struct
 {
-	char                 *command;         /**< Command line tool name. */
-	PillBigCMDMode        mode;            /**< Operation mode. */
-	int                   error;           /**< Error flag. */
-	char                 *pillbig;         /**< pill.big filename to use. */
-	int                   use_database;    /**< Use database flag. */
-	char                 *database;        /**< Database filename, if specified. */
-	PillBigReplaceMode    replace_mode;    /**< Replacement mode, when operation mode is replace */
-	PillBigCMDFormat      audio_format;    /**< Audio format. */
-	PillBigCMDFormat      bitmap_format;   /**< Bitmap format. */
-	PillBigCMDInfo        show_info;       /**< Info flags. */
-	char                 *pattern;         /**< Filename pattern. */
-	int                   files_count;     /**< Count of file indices. */
-	int                  *indices;         /**< File indices. */
-	int                   filenames_count; /**< Count of filenames. */
-	char                **filenames;       /**< Filenames */
+	char                 *command;             /**< Command line tool name. */
+	PillBigCMDMode        mode;                /**< Operation mode. */
+	int                   error;               /**< Error flag. */
+	char                 *pillbig;             /**< pill.big filename to use. */
+	int                   use_database;        /**< Use database flag. */
+	char                 *database;            /**< Database filename, if specified. */
+	PillBigReplaceMode    replace_mode;        /**< Replacement mode, when operation mode is replace */
+	PillBigCMDFormat      audio_format;        /**< Audio format. */
+	PillBigCMDFormat      bitmap_format;       /**< Bitmap format. */
+	PillBigCMDInfo        show_info;           /**< Info flags. */
+	char                 *filename_pattern;    /**< Filename pattern. */
+	int                   files_count;         /**< Count of file indices. */
+	int                  *indices;             /**< File indices. */
+	int                   filenames_count;     /**< Count of filenames. */
+	char                **filenames;           /**< Filenames */
 }
 PillBigCMDParams;
 
