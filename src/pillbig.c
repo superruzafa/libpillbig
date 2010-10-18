@@ -18,6 +18,7 @@
 #include <string.h>
 #include <pillbig/pillbig.h>
 #include "params.h"
+#include "datadir.h"
 
 #define DEFAULT_FILENAME_PATTERN "file*"
 #define PATTERN_WILDCARD_CHAR '*'
@@ -243,13 +244,13 @@ pillbig_cmd_db_open(PillBigPlatform platform, PillBigCMDParams *params)
 	char *filenames_pc[] =
 	{
 		"pillbig-pc.xml",
-		"/usr/share/pillbig/pillbig-pc.xml",
+		DATADIR"/pillbig/pillbig-pc.xml",
 		NULL
 	};
 	char *filenames_psx[] =
 	{
 		"pillbig-psx.xml",
-		"/usr/share/pillbig/pillbig-psx.xml",
+		DATADIR"/pillbig/pillbig-psx.xml",
 		NULL
 	};
 	char **filename;

@@ -19,6 +19,5 @@ libpillbig_la_LDFLAGS = -version-info $(CURRENT):$(REVISION):$(AGE) \
                         $(XML2_LIBS)
 
 EXTRA_DIST = common_internal.h file_internal.h error_internal.h \
-             audio_internal.h adpcm.h vag.h \
-             db.h
+             audio_internal.h adpcm.h vag.h
 
