@@ -87,6 +87,8 @@ pillbig_audio_extract_to_filename(
  *  	pill.big file index.
  *  @param input
  *  	Input stream whose contents will replace the pill.big file contents.
+ *  @param input_format
+ *  	Audio format of the input stream.
  *  @return
  *  	Operation result.
  *  	- PillBigError_Success

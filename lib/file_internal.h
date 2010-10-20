@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <pillbig/pillbig.h>
 
-struct PillBig
+struct _PillBig
 {
 	FILE                *pillbig;          /**< pill.big file descriptor .*/
 	PillBigPlatform      platform;         /**< Blood Omen's pill.big platform. */

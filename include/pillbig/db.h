@@ -33,7 +33,7 @@ PillBigDBEntry;
 /**
  *  Database object.
  */
-typedef struct PillBigDB *PillBigDB;
+typedef struct _PillBigDB *PillBigDB;
 
 
 
@@ -49,7 +49,7 @@ BEGIN_C_DECLS
  *  	NULL otherwise.
  */
 PillBigDB
-pillbig_db_open(char *filename);
+pillbig_db_open(const char *filename);
 
 /**
  *  Gets the count of stored files in the database.

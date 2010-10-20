@@ -22,7 +22,7 @@
 
 
 
-struct PillBigDB
+struct _PillBigDB
 {
 	xmlDocPtr           doc;
 	xmlXPathContextPtr  xpathContext;
@@ -32,18 +32,18 @@ struct PillBigDB
 };
 
 static char *
-pillbig_db_get_xpath_query_as_string(PillBigDB db, char *query);
+pillbig_db_get_xpath_query_as_string(PillBigDB db, const char *query);
 
 static int
-pillbig_db_get_xpath_query_as_int(PillBigDB db, char *query);
+pillbig_db_get_xpath_query_as_int(PillBigDB db, const char *query);
 
 static PillBigFileType
-pillbig_db_get_xpath_query_as_filetype(PillBigDB db, char *query);
+pillbig_db_get_xpath_query_as_filetype(PillBigDB db, const char *query);
 
 
 
 PillBigDB
-pillbig_db_open(char *filename)
+pillbig_db_open(const char *filename)
 {
 	pillbig_error_clear();
 	SET_ERROR_RETURN_VALUE_IF_FAIL(filename != "", PillBigError_InvalidFilename, NULL);
@@ -56,7 +56,7 @@ pillbig_db_open(char *filename)
 	xmlXPathContextPtr xpathContext = xmlXPathNewContext(doc);
 	SET_ERROR_RETURN_VALUE_IF_FAIL(xpathContext != NULL, PillBigError_UnknownError, NULL);
 
-	db = (PillBigDB)malloc(sizeof(struct PillBigDB));
+	db = (PillBigDB)malloc(sizeof(struct _PillBigDB));
 	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_SystemError, NULL);
 
 	db->doc = doc;
@@ -205,7 +205,7 @@ pillbig_db_close(PillBigDB db)
 }
 
 static int
-pillbig_db_get_xpath_query_as_int(PillBigDB db, char *query)
+pillbig_db_get_xpath_query_as_int(PillBigDB db, const char *query)
 {
 	int value;
 
@@ -218,7 +218,7 @@ pillbig_db_get_xpath_query_as_int(PillBigDB db, char *query)
 }
 
 static char *
-pillbig_db_get_xpath_query_as_string(PillBigDB db, char *query)
+pillbig_db_get_xpath_query_as_string(PillBigDB db, const char *query)
 {
 	char *value = NULL;
 
@@ -232,7 +232,7 @@ pillbig_db_get_xpath_query_as_string(PillBigDB db, char *query)
 }
 
 static PillBigFileType
-pillbig_db_get_xpath_query_as_filetype(PillBigDB db, char *query)
+pillbig_db_get_xpath_query_as_filetype(PillBigDB db, const char *query)
 {
 	PillBigFileType filetype = PillBigFileType_Unknown;
 	char *value;

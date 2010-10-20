@@ -55,14 +55,14 @@ pillbig_open(FILE *input)
 	SET_ERROR_RETURN_VALUE_IF_FAIL(input != NULL,
 		PillBigError_InvalidStream, NULL);
 
-	PillBig pillbig = (PillBig)malloc(sizeof(struct PillBig));
+	PillBig pillbig = (PillBig)malloc(sizeof(struct _PillBig));
 	SET_ERROR_RETURN_VALUE_IF_FAIL(pillbig != NULL,
 		PillBigError_SystemError, NULL);
 
 	/*
 	 * Initialize the object.
 	 */
-	memset(pillbig, 0, sizeof(struct PillBig));
+	memset(pillbig, 0, sizeof(struct _PillBig));
 	pillbig->pillbig      = input;
 	pillbig->platform     = PillBigPlatform_Unknown;
 	pillbig->replace_mode = PillBigReplaceMode_Strict;

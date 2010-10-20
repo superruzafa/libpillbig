@@ -70,7 +70,7 @@ PillBigFileEntry;
 /**
  *  PillBig object.
  */
-typedef struct PillBig *PillBig;
+typedef struct _PillBig *PillBig;
 
 
 
