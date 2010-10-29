@@ -16,6 +16,7 @@
 #include <libintl.h>
 #include <assert.h>
 #include <string.h>
+#include <regex.h>
 #include <pillbig/pillbig.h>
 #include "params.h"
 #include "datadir.h"
@@ -48,6 +49,9 @@ void
 pillbig_cmd_info(PillBig pillbig, int index, PillBigCMDParams *params);
 
 void
+pillbig_cmd_info_audio(PillBigDBAudioEntry *audio_entry);
+
+void
 pillbig_cmd_hash(PillBigCMDParams *params);
 
 void
@@ -64,6 +68,12 @@ pillbig_fill_filename(const char *pattern, int index, char *buffer, int buffer_l
 
 PillBigFileType
 pillbig_get_filetype(PillBig pillbig, int index, PillBigCMDParams *params);
+
+PillBigDBAudioSpeech *
+pillbig_get_best_l10n_speech(PillBigDBAudioEntry *entry);
+
+int
+pillbig_language_matches(const char *language);
 
 typedef
 void (* PillBigCMDActionCallback)(PillBig pillbig, int index, PillBigCMDParams *params);
@@ -303,7 +313,7 @@ pillbig_cmd_help(PillBigCMDParams *params)
     -p, --pillbig=PILLBIG        Specify the pill.big file to use\n\
     -d, --database=DATABASE      Specify the database file to use\n\
     -c, --convert=FORMAT         Set a conversion format\n\
-    -n,	--name=PATTERN           External filenames pattern"));
+    -t,	--pattern=PATTERN        External filenames pattern"));
 
 	puts("");
 
@@ -386,11 +396,43 @@ pillbig_cmd_info(PillBig pillbig, int index, PillBigCMDParams *params)
 	const PillBigDBEntry   *dbentry = NULL;
 	const char *filename = pillbig_get_filename(pillbig, index, params);
 
+	if (db != NULL)
+	{
+		dbentry = pillbig_db_get_entry(db, index);
+	}
+
 	if (params->show_info & PillBigCMDInfo_Index)  printf(_("Index: %04d\n"), index);
 	if (params->show_info & PillBigCMDInfo_Name)   printf(_("Filename: %s\n"), filename);
 	if (params->show_info & PillBigCMDInfo_Hash)   printf(_("Hash: 0x%08X\n"), entry->hash);
 	if (params->show_info & PillBigCMDInfo_Offset) printf(_("Offset: %d\n"), entry->offset);
 	if (params->show_info & PillBigCMDInfo_Size)   printf(_("Size: %d\n"), entry->size);
+
+	if (dbentry != NULL)
+	{
+		switch (dbentry->filetype)
+		{
+		case PillBigFileType_Audio:
+			pillbig_cmd_info_audio(dbentry->audio);
+			break;
+		}
+	}
+
+}
+
+void
+pillbig_cmd_info_audio(PillBigDBAudioEntry *audio_entry)
+{
+
+	if (audio_entry->character != NULL)
+	{
+		printf(_("Character: %s\n"), audio_entry->character);
+	}
+
+	PillBigDBAudioSpeech *speech = pillbig_get_best_l10n_speech(audio_entry);
+	if (speech != NULL)
+	{
+		printf(_("Speech: %s\n"), speech->speech);
+	}
 }
 
 void
@@ -425,7 +467,7 @@ pillbig_cmd_extract(PillBig pillbig, int index, PillBigCMDParams *params)
 	PillBigDB db = pillbig_get_db(pillbig);
 	const PillBigDBEntry *dbentry = NULL;
 	PillBigFileType filetype = pillbig_get_filetype(pillbig, index, params);
-	PillBigAudioFormat audio_output_format;
+	PillBigAudioFormat audio_output_format = PillBigAudioFormat_Unknown;
 	const char *filename = pillbig_get_filename(pillbig, index, params);
 	assert(filename != NULL);
 
@@ -438,11 +480,16 @@ pillbig_cmd_extract(PillBig pillbig, int index, PillBigCMDParams *params)
 				case PillBigCMDFormat_WAV: audio_output_format = PillBigAudioFormat_WAVE; break;
 				default: audio_output_format = PillBigAudioFormat_Unknown; break;
 			}
-			pillbig_audio_extract_to_filename(pillbig, index, filename, audio_output_format);
-			break;
-		default:
-			pillbig_file_extract_to_filename(pillbig, index, filename);
-			break;
+	}
+
+	if (filetype == PillBigFileType_Audio &&
+	    audio_output_format != PillBigAudioFormat_Unknown)
+	{
+		pillbig_audio_extract_to_filename(pillbig, index, filename, audio_output_format);
+	}
+	else
+	{
+		pillbig_file_extract_to_filename(pillbig, index, filename);
 	}
 
 	if (pillbig_error_get() == PillBigError_Success)
@@ -534,16 +581,66 @@ pillbig_get_filetype(PillBig pillbig, int index, PillBigCMDParams *params)
 
 	PillBigFileType filetype = PillBigFileType_Unknown;
 	PillBigDB db = pillbig_get_db(pillbig);
-	const PillBigDBEntry *dbentry = NULL;
 
 	if (db != NULL)
 	{
+		const PillBigDBEntry *dbentry = NULL;
 		dbentry = pillbig_db_get_entry(db, index);
 		if (dbentry != NULL)
 		{
 			filetype = dbentry->filetype;
 		}
 	}
-
+	else
+	{
+		filetype = pillbig_file_get_type(pillbig, index);
+	}
 	return filetype;
+}
+
+PillBigDBAudioSpeech *
+pillbig_get_best_l10n_speech(PillBigDBAudioEntry *entry)
+{
+	assert(entry != NULL);
+	PillBigDBAudioSpeech *speech = NULL;
+	int i = 0;
+
+	while (i < entry->speeches_count)
+	{
+		if (speech == NULL)
+		{
+			speech = &entry->speeches[i];
+		}
+		else if (pillbig_language_matches(entry->speeches[i].language))
+		{
+			speech = &entry->speeches[i];
+			break;
+		}
+		i++;
+	}
+
+	return speech;
+}
+
+int
+pillbig_language_matches(const char *language)
+{
+	static char *envlang = NULL;
+	int result;
+	char buffer[16];
+
+	if (strlen(language) > 14) return 0;
+
+	sprintf(buffer, "^%s", language);
+	if (envlang == NULL) envlang = getenv("LANG");
+
+	regex_t regex;
+	result = regcomp(&regex, buffer, REG_NOSUB);
+	assert(result == 0);
+
+	result = regexec(&regex, envlang, 0, NULL, 0);
+	result = result == 0 ? 1 : 0;
+	regfree(&regex);
+
+	return result;
 }

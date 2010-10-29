@@ -12,6 +12,7 @@
  *  @version $Id$
  */
 
+
 #ifndef __PILLBIG_FILE_H__
 #define __PILLBIG_FILE_H__
 
@@ -19,7 +20,6 @@
 #include <pillbig/common.h>
 #include <pillbig/error.h>
 #include <pillbig/db.h>
-
 
 
 /**
@@ -35,29 +35,8 @@
 
 
 /**
- *  Game platform.
- */
-typedef enum
-{
-	PillBigPlatform_Unknown,    /**< Unknown platform. */
-	PillBigPlatform_PC,         /**< PC platform. */
-	PillBigPlatform_PSX,        /**< PlayStation platform. */
-}
-PillBigPlatform;
-
-/**
- *  Replacement modes.
- */
-typedef enum
-{
-	PillBigReplaceMode_Strict,               /**< The replace file size must be the same than the one from pill.big. */
-	PillBigReplaceMode_AllowShorterFiles,    /**< The replace file size must be shorter or equal than the one from pill.big. */
-	PillBigReplaceMode_AllowLargerFiles,     /**< The replace file size could be different than the one from pill.big. */
-}
-PillBigReplaceMode;
-
-/**
- *  pill.big file entry.
+ *  @brief
+ *  	pill.big file entry.
  */
 typedef struct
 {

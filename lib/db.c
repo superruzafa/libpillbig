@@ -18,7 +18,7 @@
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <pillbig/pillbig.h>
-#include "error_internal.h"
+#include "pillbig_internal.h"
 
 
 
@@ -40,6 +40,11 @@ pillbig_db_get_xpath_query_as_int(PillBigDB db, const char *query);
 static PillBigFileType
 pillbig_db_get_xpath_query_as_filetype(PillBigDB db, const char *query);
 
+static PillBigDBAudioEntry *
+pillbig_db_get_audio_entry(PillBigDB db, int index);
+
+static PillBigDBAudioSpeech *
+pillbig_db_get_audio_speeches(PillBigDB db, int index, int *speeches_count);
 
 
 PillBigDB
@@ -58,6 +63,8 @@ pillbig_db_open(const char *filename)
 
 	db = (PillBigDB)malloc(sizeof(struct _PillBigDB));
 	SET_ERROR_RETURN_VALUE_IF_FAIL(db != NULL, PillBigError_SystemError, NULL);
+
+	memset(db, 0, sizeof(struct _PillBigDB));
 
 	db->doc = doc;
 	db->xpathContext = xpathContext;
@@ -137,6 +144,13 @@ pillbig_db_get_entry(PillBigDB db, int index)
 
 		sprintf(query, "/pillbig/file[@index='%d']/@type", index);
 		db->entries[index]->filetype = pillbig_db_get_xpath_query_as_filetype(db, query);
+
+		switch (db->entries[index]->filetype)
+		{
+		case PillBigFileType_Audio:
+			db->entries[index]->audio = pillbig_db_get_audio_entry(db, index);
+			break;
+		}
 	}
 
 	return db->entries[index];
@@ -180,19 +194,38 @@ pillbig_db_close(PillBigDB db)
 	pillbig_error_clear();
 	SET_ERROR_RETURN_IF_FAIL(db != NULL, PillBigError_UnknownError);
 
+	PillBigDBEntry *entry;
+
 	int i = 0;
 
 	if (db->entries != NULL)
 	{
 		while (i < db->files_count)
 		{
-			if (db->entries[i] != NULL)
+			entry = db->entries[i];
+			if (entry != NULL)
 			{
-				if (db->entries[i]->filename != NULL)
+				if (entry->filename != NULL) free(entry->filename);
+
+				switch (entry->filetype)
 				{
-					free(db->entries[i]->filename);
+				case PillBigFileType_Audio:
+					if (entry->audio->character != NULL) free(entry->audio->character);
+					if (entry->audio->speeches != NULL)
+					{
+						int i;
+						for (i = 0; i < entry->audio->speeches_count; i++)
+						{
+							PillBigDBAudioSpeech *speech = &entry->audio->speeches[i];
+							if (speech->language != NULL) free(speech->language);
+							if (speech->speech   != NULL) free(speech->speech);
+						}
+						free(entry->audio->speeches);
+					}
+					break;
 				}
-				free(db->entries[i]);
+
+				free(entry);
 			}
 			i++;
 		}
@@ -252,4 +285,49 @@ pillbig_db_get_xpath_query_as_filetype(PillBigDB db, const char *query)
 	free(xpathObject);
 
 	return filetype;
+}
+
+static PillBigDBAudioEntry *
+pillbig_db_get_audio_entry(PillBigDB db, int index)
+{
+	PillBigDBAudioEntry *entry;
+	char query[128];
+
+	entry = (PillBigDBAudioEntry *)malloc(sizeof(PillBigDBAudioEntry));
+	SET_ERROR_RETURN_VALUE_IF_FAIL(entry != NULL, PillBigError_SystemError, NULL);
+	memset(entry, 0, sizeof(PillBigDBAudioEntry));
+
+	sprintf(query, "/pillbig/file[@index='%d']/audio/@character", index);
+	entry->character = pillbig_db_get_xpath_query_as_string(db, query);
+	entry->speeches = pillbig_db_get_audio_speeches(db, index, &entry->speeches_count);
+
+	return entry;
+}
+
+static PillBigDBAudioSpeech *
+pillbig_db_get_audio_speeches(PillBigDB db, int index, int *speeches_count)
+{
+	PillBigDBAudioSpeech *speeches = NULL;
+	*speeches_count = 0;
+	char query[128];
+
+	sprintf(query, "/pillbig/file[@index='%d']/audio/speech", index);
+	xmlXPathObjectPtr xpathObject = xmlXPathEvalExpression(query, db->xpathContext);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(xpathObject != NULL, PillBigError_SystemError, NULL);
+	*speeches_count = xpathObject->nodesetval->nodeNr;
+
+	speeches = (PillBigDBAudioSpeech *)calloc(*speeches_count, sizeof(PillBigDBAudioSpeech));
+	SET_ERROR_RETURN_VALUE_IF_FAIL(xpathObject != NULL, PillBigError_SystemError, NULL);
+	memset(speeches, 0, sizeof(*speeches_count * sizeof(PillBigDBAudioSpeech)));
+
+	int i;
+	for (i = 0; i < *speeches_count; i++)
+	{
+		db->xpathContext->node = xpathObject->nodesetval->nodeTab[i];
+		speeches[i].language = pillbig_db_get_xpath_query_as_string(db, "@xml:lang");
+		speeches[i].speech   = pillbig_db_get_xpath_query_as_string(db, ".");
+	}
+	xmlFree(xpathObject);
+
+	return speeches;
 }

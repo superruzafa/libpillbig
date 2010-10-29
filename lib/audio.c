@@ -17,9 +17,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <pillbig/pillbig.h>
-#include "error_internal.h"
-#include "file_internal.h"
-#include "audio_internal.h"
+#include "pillbig_internal.h"
 
 #include "adpcm.h"
 #include "vag.h"
@@ -192,7 +190,10 @@ pillbig_audio_get_format(PillBig pillbig, int index)
 	int magic32, magic16;
 
 	result = fseek(pillbig->pillbig, pillbig->entries[index].offset, SEEK_SET);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(result == 0, PillBigError_SystemError, format);
 	result = fread(&magic32, 4, 1, pillbig->pillbig);
+	SET_ERROR_RETURN_VALUE_IF_FAIL(result == 1, PillBigError_SystemError, result);
+
 	magic16 = (magic32 & 0xffff);
 
 	switch (pillbig->platform)
@@ -205,6 +206,10 @@ pillbig_audio_get_format(PillBig pillbig, int index)
 			else if (magic16 == 0x0200 || magic32 == VAG_MAGIC_ID)
 			{
 				format = PillBigAudioFormat_VAG;
+			}
+			else if (magic32 == RIFF_MAGIC_ID)
+			{
+				format = PillBigAudioFormat_WAVE;
 			}
 			break;
 		case PillBigPlatform_PSX:
@@ -226,7 +231,6 @@ pillbig_audio_get_format(PillBig pillbig, int index)
 static PillBigError
 pillbig_audio_write_wave_header(FILE *output, PillBigAudioParameters *parameters)
 {
-	#define RIFF 0x46464952
 	#define WAVE 0x45564157
 	#define fmt  0x20746D66
 	#define data 0x61746164
@@ -238,7 +242,7 @@ pillbig_audio_write_wave_header(FILE *output, PillBigAudioParameters *parameters
 	int bytes_per_sample = parameters->bits_per_sample / 8;
 
 	/* RIFF chunk Id */
-	WRITE_WAVE_FIELD_4(RIFF);
+	WRITE_WAVE_FIELD_4(RIFF_MAGIC_ID);
 	/* All chunks size starting next field */
 	WRITE_WAVE_FIELD_4(36 + parameters->samples_count * bytes_per_sample);
 	/* WAVE Id */

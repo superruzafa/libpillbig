@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <pillbig/pillbig.h>
+#include "pillbig_internal.h"
 
 struct _PillBig
 {

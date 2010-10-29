@@ -15,6 +15,7 @@
 #ifndef __PILLBIG_H__
 #define __PILLBIG_H__
 
+#include <pillbig/common.h>
 #include <pillbig/error.h>
 #include <pillbig/file.h>
 #include <pillbig/audio.h>

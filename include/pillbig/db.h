@@ -17,21 +17,47 @@
 
 #include <pillbig/common.h>
 
+typedef struct
+{
+	char *language;
+	char *speech;
+}
+PillBigDBAudioSpeech;
+
+
+typedef struct
+{
+	char                    *character;         /**< Character who utter the speech, if any. */
+	int                      speeches_count;    /**< Speeches count */
+	PillBigDBAudioSpeech    *speeches;          /**< Speeches list. */
+	PillBigAudioFormat       format;
+	int                      rate;
+
+}
+PillBigDBAudioEntry;
+
 /**
- *  Database entry.
+ *  @brief
+ *  	Database entry.
  */
-typedef struct PillBigDBEntry
+typedef struct
 {
 	PillBigFileHash  hash;        /**< File hash. */
 	int              offset;      /**< File offset. */
 	int              size;        /**< File size. */
 	char            *filename;    /**< Internal name. */
+	int              used;        /**< Is file used? */
 	PillBigFileType  filetype;    /**< File type. */
+	union
+	{
+		PillBigDBAudioEntry *audio;
+	};
 }
 PillBigDBEntry;
 
 /**
- *  Database object.
+ *  @brief
+ *  	Database object.
  */
 typedef struct _PillBigDB *PillBigDB;
 

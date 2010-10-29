@@ -22,6 +22,8 @@
 #endif
 
 Suite *pillbig_file_test_get_suite();
+Suite *pillbig_db_test_get_suite();
+Suite *pillbig_audio_test_get_suite();
 
 int
 main(int argc, char **argv)
@@ -32,6 +34,7 @@ main(int argc, char **argv)
 
 	runner = srunner_create(pillbig_file_test_get_suite());
 	srunner_add_suite(runner, pillbig_db_test_get_suite());
+	srunner_add_suite(runner, pillbig_audio_test_get_suite());
 
 	srunner_run_all(runner, CK_VERBOSE);
 

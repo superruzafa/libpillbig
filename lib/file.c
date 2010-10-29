@@ -18,9 +18,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <pillbig/pillbig.h>
-#include "common_internal.h"
-#include "error_internal.h"
-#include "file_internal.h"
+#include "pillbig_internal.h"
 
 
 
@@ -46,7 +44,8 @@ pillbig_read_file_entries(PillBig pillbig);
 static PillBigPlatform
 pillbig_guess_platform(PillBig pillbig);
 
-
+static PillBigFileType
+pillbig_guess_filetype(PillBig pillbig, int index);
 
 PillBig
 pillbig_open(FILE *input)
@@ -322,6 +321,10 @@ pillbig_file_get_type(PillBig pillbig, int index)
 			filetype = dbentry->filetype;
 		}
 	}
+	else
+	{
+		filetype = pillbig_guess_filetype(pillbig, index);
+	}
 
 	return filetype;
 }
@@ -480,4 +483,23 @@ pillbig_guess_platform(PillBig pillbig)
 	}
 
 	return platform;
+}
+
+static PillBigFileType
+pillbig_guess_filetype(PillBig pillbig, int index)
+{
+	PillBigFileType filetype = PillBigFileType_Unknown;
+
+	/*
+	 * Guess an audio filetype.
+	 */
+	PillBigAudioFormat audio_format = pillbig_audio_get_format(pillbig, index);
+	if (audio_format != PillBigAudioFormat_Unknown)
+	{
+		filetype = PillBigFileType_Audio;
+	}
+
+	// TODO Detect other types here.
+
+	return filetype;
 }

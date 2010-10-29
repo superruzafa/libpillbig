@@ -16,23 +16,7 @@
 #define __PILLBIG_AUDIO_H__
 
 #include <stdio.h>
-#include <pillbig/common.h>
-#include <pillbig/error.h>
 #include <pillbig/file.h>
-
-/**
- *  Audio formats.
- */
-typedef enum
-{
-	PillBigAudioFormat_Autodetect = -1,    /**< Autodetect audio format */
-	PillBigAudioFormat_Unknown = 0,        /**< Unknown audio format */
-	PillBigAudioFormat_PCM,                /**< PCM audio format */
-	PillBigAudioFormat_VAG,                /**< PlayStation VAG audio format */
-	PillBigAudioFormat_ADPCM,              /**< ADPCM audio format */
-	PillBigAudioFormat_WAVE,               /**< RIFF wave format */
-}
-PillBigAudioFormat;
 
 
 
@@ -144,7 +128,7 @@ pillbig_audio_replace_from_filename(
  *  @param index
  *  	pill.big file index.
  *  @return
- *  	Audio format if sucessful. PillBigAudioFormat_Unknown otherwise.
+ *  	Audio format if successful. PillBigAudioFormat_Unknown otherwise.
  */
 PillBigAudioFormat
 pillbig_audio_get_format(PillBig pillbig, int index);

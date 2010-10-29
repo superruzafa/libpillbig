@@ -4,12 +4,17 @@
 <!ELEMENT file (filename?,hash?,offset?,size?,audio?)>
 <!ATTLIST file index CDATA #REQUIRED>
 <!ATTLIST file type (audio|bitmap|map|sprite|tilemap) #IMPLIED>
+<!ATTLIST file used CDATA "true">
 
 <!ELEMENT filename (#PCDATA)>
 <!ELEMENT hash (#PCDATA)>
 <!ELEMENT offset (#PCDATA)>
 <!ELEMENT size (#PCDATA)>
 
-<!ELEMENT audio EMPTY>
+<!ELEMENT audio (speech*)>
+<!ATTLIST audio character CDATA #IMPLIED>
 <!ATTLIST audio format (vag|adpcm|wave) #IMPLIED>
 <!ATTLIST audio rate CDATA #IMPLIED>
+
+<!ELEMENT speech (#PCDATA)>
+<!ATTLIST speech xml:lang NMTOKEN #REQUIRED>
